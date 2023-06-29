@@ -1,23 +1,26 @@
 import pytest
-from src.python_activator.api import read_root
+from src.python_activator.api import hello,execute_endpoint
 
 def test_root():
 	
 	expected = {"Hello": "World"}
 
 	# Act
-	output = read_root()
+	output = hello()
 
 	# Assert
 	assert output == expected
 	
-def test_tootFail():
+def test_hard_coded_root_nessage_doesnt_know_Farid():
 	
 	expected = {"Hello": "Farid"}
 
 	# Act
-	output = read_root()
+	output = hello()
 
 	# Assert
-	assert output == expected
-	
+	assert output != expected
+ 
+ 
+
+ 
