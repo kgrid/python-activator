@@ -29,8 +29,8 @@
 4. Send an http POST reqest using postman to http://127.0.0.1:8000/test  to test it. Enter the Use the following json format for the body of the request:
     
     `{
-        "name":"farid",
-        "spaces":50
+        "name":"MyName",
+        "spaces":20
     }`
 
     Note: For Now you can use any endpoint name since it will use hardcoded package name for every endpoint name. The package name is located at {path}/python-activator/src/python_activator/pyshelf/
