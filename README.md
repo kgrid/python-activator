@@ -13,6 +13,9 @@
 
 4. Set breakpoints and run debugger by clicking on Run and Debug icon, selecting Run and Debug and setting the file type to python if not done already
 
+## For developers
+poetry run uvicorn python_activator.api:app --reload
+or make sure running in a shell (may be close terminal in vscode and reopen. it should show left side the virtual env that is activated.) and use uvicorn python_activator.api:app --reload
 ## For installing and running the app
 
 1. Create build files (.whl and .tar.gz) using the following command in the root of the app
