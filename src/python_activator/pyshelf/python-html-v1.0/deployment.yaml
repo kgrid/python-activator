@@ -1,0 +1,9 @@
+/welcome:
+  post:
+    artifact:
+      - src/main.py
+      - requirements.txt
+    engine: python
+    entry: src/main.py
+    function: generate_page
+    checksum: lq+MHXOHoD2aI8qVpmXBaWuG5Qg=

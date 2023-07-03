@@ -29,11 +29,25 @@ or make sure running in a shell (may be close terminal in vscode and reopen. it 
 
     `uvicorn python_activator.api:app`
 
-4. Send an http POST reqest using postman to http://127.0.0.1:8000/test  to test it. Enter the Use the following json format for the body of the request:
+4. Send an http POST reqest using postman to http://127.0.0.1:8000/{name of package}  to test it. Use the following json format for the body of the request:
     
     `{
         "name":"MyName",
         "spaces":20
+    }`
+
+    for included packages in this commit use http://127.0.0.1:8000/python-simple-v1.0
+    with 
+    `{
+    "name":"farid",
+    "spaces":10
+    }`
+
+    and http://127.0.0.1:8000/python-html-v1.0 with 
+    `{
+    "name":"farid",
+    "spaces":10,
+    "size":25
     }`
 
     Note: For Now you can use any endpoint name since it will use hardcoded package name for every endpoint name. The package name is located at {path}/python-activator/src/python_activator/pyshelf/
