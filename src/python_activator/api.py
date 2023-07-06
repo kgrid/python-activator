@@ -7,7 +7,7 @@ import os
 from os import path
 import subprocess
 import yaml
-
+import json 
 app = FastAPI()
 
 KnowledgeObjects = {}
@@ -17,8 +17,13 @@ KnowledgeObjects = {}
 def hello():
     return {"Hello": "World9"}
 
+
+@app.post("/test/test1")
+def hello():
+    return {"Hello": "test"}
+
 #end point to expose all packages
-@app.post("/{endpoint_key}")
+@app.post("/{endpoint_key:path}")
 async def execute_endpoint(
     endpoint_key: str, request: Request, content_type: str = Header(...)
 ):
@@ -37,6 +42,7 @@ async def execute_endpoint(
     else:
         return {"result": "ko not found!"}
 
+
 #Install requirements using the requirements.txt file for each package
 def install_requirements(modulepath):
     dependency_requirements = modulepath + "requirements.txt"
@@ -52,45 +58,41 @@ def install_requirements(modulepath):
 def object_crawler(directory):
     ko_folders = [f.name for f in os.scandir(directory) if f.is_dir()]
     for ko_folder in ko_folders:
-        install_module(directory + ko_folder + "/", ko_folder)
+        install_module(directory , ko_folder)
 
 
-def install_module(modulepath, ko_folder):
+def install_module(directory, ko_folder):
+    modulepath=directory + ko_folder + "/"
     install_requirements(
         modulepath,
     )
 
     # TO DO: test how it works for windows installation
 
-    # get metadata, to be used to import all modules needed for multiartifact packages
+    # get metadata and deployment files
     with open(modulepath + "deployment.yaml", "r") as file:
         prime_service = yaml.safe_load(file)
+        
+    with open(modulepath + "metadata.json", 'r') as file:
+        data = json.load(file)    
+        
 
-    # import package(s)
-    files = prime_service["/welcome"]["post"]["artifact"]
-    for file in files:
-        if file.split(".")[1] == "py":
-            ko_endpoint = import_module_from_path(modulepath + file)
-            if file == prime_service["/welcome"]["post"]["entry"]:
-                mymethod = getattr(
-                    ko_endpoint, prime_service["/welcome"]["post"]["function"]
-                )
-                KnowledgeObjects[ko_folder] = mymethod
-
-
-def import_module_from_path(module_path):
-    module_name = module_path.split("/")[-1].split(".")[
+    sys.path.append(directory)
+    module_name=ko_folder+"."+prime_service["/welcome"]["post"]["entry"].split(".")[
         0
-    ]  # Extract the module name from the path
-
-    spec = importlib.util.spec_from_file_location(module_name, module_path)
+    ].replace("/",".")  ##i.e. 'python-multiartifact-v1.0.src.main'
+    spec = importlib.util.spec_from_file_location(module_name, modulepath+prime_service["/welcome"]["post"]["entry"])
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
+    sys.path.remove(directory)
+    
+    mymethod = getattr(
+                    module, prime_service["/welcome"]["post"]["function"]
+                )
+    KnowledgeObjects[data["@id"]] = mymethod
 
-    return module
 
-
-object_crawler("/home/faridsei/dev/code/python-activator/src/python_activator/pyshelf/")
+object_crawler("/home/faridsei/dev/test/pyshelf/") #temporarily hardcode the path that contains knowledge objects here
 
 
 # only runs virtual server when running this .py file directly for debugging
