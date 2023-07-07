@@ -11,6 +11,7 @@ python = "^3.10"
 fastapi = "^0.98.0"
 flask = "^2.3.2"
 pyyaml = "^6.0"
+typer = "^0.9.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"
@@ -20,4 +21,8 @@ black = "^23.3.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+python-activator="python_activator.cli:cli"
+
 
