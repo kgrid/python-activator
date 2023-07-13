@@ -28,15 +28,15 @@ Note: Multiartifact packages should not have a dot in their name as it causes is
 ## Run the app
 There are 5 different ways of running this app. The last 4 require the app to be installed either using poetry install  for development environment or installingfrom the .whl file for prod
 
-1. Run the app using debugger (mentioned earlier)
+1. Run the app using debugger (object_directory and manifest_path are hardcoded at the buttom of api.py for debugging)
 
-2. Use CLI to run and pass --object-path as input parameter:   
+2. Use CLI to run and pass --collection-path and --manifest-path as input parameters:   
 
-`python-activator run --object-path={your collection path}`
+`python-activator run --collection-path={your collection path} --manifest-path={your manifest path}`
 
-3. Use CLI to run the app by setting OBJECT_PATH as an environment variable:    
+3. Use CLI to run the app by setting COLLECTION_PATH and MANIFEST_PATH as an environment variables:    
 
-`OBJECT_PATH={your collection path} python-activator run`
+`COLLECTION_PATH={your collection path} MANIFEST_PATH={your manifest path} python-activator run`
 
 4. Use cli with no path provided. It will consider {root of app}/pyshelf as object location.
 
@@ -44,17 +44,19 @@ There are 5 different ways of running this app. The last 4 require the app to be
 
 5.Run the app using uvicorn command and pass the object path using environment variables. 
 
-`OBJECT_PATH={your collection path} poetry run uvicorn python_activator.api:app --reload` 
+`COLLECTION_PATH={your collection path} poetry run uvicorn python_activator.api:app --reload` 
 
 If running in a virtual environment you could also use 
 
-`OBJECT_PATH={your collection path} uvicorn python_activator.api:app --reload`
+`COLLECTION_PATH={your collection path} MANIFEST_PATH={your manifest path} uvicorn python_activator.api:app --reload`
 
 ## Use loaded knowledge objects
+Use http://127.0.0.1:8000/endpoints to get the endpoints and their status
 
-Send an http POST reqest using postman to http://127.0.0.1:8000/{package id from metadata}  to test it. Provide input using the approperiate format in the body of the request. i.e. json
+
+Send an http POST reqest using postman to http://127.0.0.1:8000/ep/{package id from metadata}  to test it. Provide input using the approperiate format in the body of the request. i.e. json
     
-    use http://127.0.0.1:8000/python/simple/v1.0
+    use http://127.0.0.1:8000/ep/python/simple/v1.0
     with 
     `{
     "name":"farid",
@@ -62,7 +64,7 @@ Send an http POST reqest using postman to http://127.0.0.1:8000/{package id from
     }`
     for python-simple-v1.0.zip
 
-    and http://127.0.0.1:8000/python/multiartifact/v1.0 with 
+    and http://127.0.0.1:8000/ep/python/multiartifact/v1.0 with 
     `{
     "name":"farid",
     "spaces":10,

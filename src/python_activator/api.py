@@ -3,17 +3,33 @@ import sys
 import uvicorn
 import importlib
 from importlib import util, metadata
-import os
+
 from os import path
 import subprocess
 import yaml
 import json
-from pathlib import Path
+import typer
+from python_activator.manifest import *
+
+class knowledge_object:
+    def __init__(self, name, status, function ,id):
+        self.id= id
+        self.name = name
+        self.status = status
+        self.function = function
+
+class CustomEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, knowledge_object):
+            return {'name': obj.name, 'status': obj.status, 'id': obj.id}
+        return super().default(obj)
 
 app = FastAPI()
-KnowledgeObjects = (
+Knowledge_Objects = (
     {}
-)  # this dictionary used to keep loaded objects (key:is and value:function)
+)
+
+# this dictionary used to keep loaded objects (key:is and value:function)
 object_directory = ""  # used for location of knowledge objects
 
 
@@ -22,9 +38,10 @@ def hello():
     return {"Hello": "World9"}
 
 
-@app.post("/endpoints")
+@app.get("/endpoints")
 def hello():
-    return {"Hello": "test"}
+    return json.loads(json.dumps(Knowledge_Objects,cls=CustomEncoder, indent=4))
+
 
 
 # end point to expose all packages
@@ -33,17 +50,22 @@ async def execute_endpoint(
     endpoint_key: str, request: Request, content_type: str = Header(...)
 ):
     # get the method
-    function = KnowledgeObjects[endpoint_key]
-    if function:
-        # run the imported method and pass the request json
-        # if content_type == 'application/json':
-        data = await request.json()
-        # else:
-        #   data="test"
+    if endpoint_key in Knowledge_Objects:
+        function = Knowledge_Objects[endpoint_key].function
+        if function and Knowledge_Objects[endpoint_key].status=="Activated":
+            # run the imported method and pass the request json
+            # if content_type == 'application/json':
+            data = await request.json()
+            # else:
+            #   data="test"
 
-        result = function(data)
+            result = function(data)
 
-        return {"result": result}
+            return {"result": result}
+        elif Knowledge_Objects[endpoint_key].status!="Activated":
+            return {"result": Knowledge_Objects[endpoint_key].status}
+        else:
+            return {"result": "Knowledge object not found!"}
     else:
         return {"result": "Knowledge object not found!"}
 
@@ -51,6 +73,9 @@ async def execute_endpoint(
 # Install requirements using the requirements.txt file for each package
 def install_requirements(modulepath):
     dependency_requirements = modulepath + "requirements.txt"
+
+    # To Do: using pip install bellow explore installing requirements in a folder specific to the ko
+    #       you may need to add that folder to the sys.path
 
     # uses 'pip install -r requirements.txt' to install requirements
     if path.exists(dependency_requirements):
@@ -60,75 +85,93 @@ def install_requirements(modulepath):
 
 
 # look into the main directory that has all the packages and have the python ones installed
-def install_packages_from_directory(directory):
-    ko_folders = [f.name for f in os.scandir(directory) if f.is_dir()]
-    sys.path.append(
-        directory
-    )  # temporarily add external packages directory to sys.path to be explorable by python
-    for ko_folder in ko_folders:
-        install_module(directory, ko_folder)
-    sys.path.remove(directory)  # remove external packages directory from sys.path
+def install_packages_from_directory(directory, manifest: dict):
+    for ko in manifest:        
+        install_module(directory, manifest[ko])
     list_installed_packages()
 
 
 def install_module(
-    directory, ko_folder
+    directory, ko
 ):  # TO DO: test how it works for windows installation
-    modulepath = directory + ko_folder + "/"
-    install_requirements(modulepath)
+    Knowledge_Objects[ko.name] = knowledge_object(ko.name,ko.status,None,"")
 
-    # get metadata and deployment files
-    with open(modulepath + "deployment.yaml", "r") as file:
-        deployment_data = yaml.safe_load(file)
-    with open(modulepath + "metadata.json", "r") as file:
-        metadata = json.load(file)
+    try:
+        modulepath = directory + ko.name + "/"
 
-    # import module, get the function and add it to the dictionary
-    module_name = (
-        ko_folder
-        + "."
-        + deployment_data["/welcome"]["post"]["entry"].split(".")[0].replace("/", ".")
-    )  ##i.e. 'python-multiartifact-v1.0.src.main'
-    spec = util.spec_from_file_location(
-        module_name, modulepath + deployment_data["/welcome"]["post"]["entry"]
-    )
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    mymethod = getattr(module, deployment_data["/welcome"]["post"]["function"])
-    KnowledgeObjects[metadata["@id"]] = mymethod
+        #########delete me: temporarily ignoring execute package
+        if ko.name == "python-executive-v1.0":
+            return
+        
+        if ko.status!="Ready for install":
+            return
 
+
+        Knowledge_Objects[ko.name].status = "Activating"
+        
+        # get metadata and deployment files
+        with open(modulepath + "deployment.yaml", "r") as file:
+            deployment_data = yaml.safe_load(file)
+        with open(modulepath + "metadata.json", "r") as file:
+            metadata = json.load(file)
+        first_key = next(iter(deployment_data))
+        second_key = next(iter(deployment_data[first_key]))
+        
+        # do not install non python packages
+        if deployment_data[first_key][second_key]["engine"] != "python":
+            del Knowledge_Objects[ko.name]
+            Knowledge_Objects[metadata["@id"]] = knowledge_object(ko.name,"Knowledge object is not activated. It is not a python object.",None,metadata["@id"])
+            return
+
+        # install requirements
+        install_requirements(modulepath)
+
+        # import module, get the function and add it to the dictionary
+        spec = importlib.util.spec_from_file_location(
+            ko.name, modulepath + "/src/__init__.py"
+        )
+        pac_a = importlib.util.module_from_spec(spec)
+        sys.modules[pac_a.__name__] = pac_a
+        module = importlib.import_module(
+            str.replace(
+                deployment_data[first_key][second_key]["entry"], "src/", "."
+            ).replace(".py", ""),
+            pac_a.__name__,
+        )
+        mymethod = getattr(module, deployment_data[first_key][second_key]["function"])
+        del Knowledge_Objects[ko.name]
+        Knowledge_Objects[metadata["@id"]] = knowledge_object(ko.name,"Activated",mymethod,metadata["@id"])
+    except Exception as e:
+        Knowledge_Objects[ko.name].status="Faield activating with error: "+ repr(e)
 
 def list_installed_packages():
     print("-------------------\nPackages installed:")
-    keys_list = list(KnowledgeObjects.keys())
-    print(keys_list)
+    #keys_list = list(KnowledgeObjects.keys())
+    print("{:<4}. {:<30} {:<30} {:<30}".format("","ID","NAME","STATUS"))
+    for i,item in  enumerate(Knowledge_Objects):
+        print("{:<4}. {:<30} {:<30} {:<30}".format(str(i),Knowledge_Objects[item].id,Knowledge_Objects[item].name[:30], Knowledge_Objects[item].status[:50]))
+    
     print("-------------------")
 
 
 # run install if the app is starated using poetry run uvicorn python_activator.api:app --reload
-# @app.on_event("startup")
-# async def startup_event():
-#    if sys.argv[0].split("/")[-1]=="uvicorn":
-#        print("++++++++++++++++++++++++")
-#        run("/home/faridsei/dev/test/pyshelf/")
+@app.on_event("startup")
+async def startup_event():
+    print(">>>>>> running startup event")
+    object_directory = os.environ["COLLECTION_PATH"]
+    manifest = process_manifest(object_directory)
+    install_packages_from_directory(object_directory, manifest)
+    del os.environ["COLLECTION_PATH"]
+    del os.environ["MANIFEST_PATH"]
 
 
 # run virtual server when running this .py file directly for debugging. It will look for objects at {code folder}/pyshelf
 if __name__ == "__main__":
     print(">>>>>running with debug<<<<<")
-    install_packages_from_directory("/home/faridsei/dev/test/pyshelf/")
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    os.environ["MANIFEST_PATH"]="/home/faridsei/dev/test/package/manifest.json"
+    #os.environ[
+    #    "MANIFEST_PATH"
+    #] = "https://github.com/kgrid-objects/example-collection/releases/download/4.2.1/manifest.json"
+    os.environ["COLLECTION_PATH"] = "/home/faridsei/dev/test/pyshelf/"
 
-# run install packages from the given OBJECT_PATH if the app is starated using "OBJECT_PATH={your collection path} poetry run uvicorn python_activator.api:app --reload". If running in a virtual environment you could also use "OBJECT_PATH={your collection path} uvicorn python_activator.api:app --reload"
-if __name__=="python_activator.api" and sys.argv[0].split("/")[-1]=="uvicorn": 
-    if os.environ.get(
-        "OBJECT_PATH"
-    ):  
-        print(">>>>>running with uvicorn<<<<<")
-        object_directory = os.environ.get("OBJECT_PATH")
-        del os.environ["OBJECT_PATH"]
-        install_packages_from_directory(object_directory)
-    else:
-        print("Attention! No collection path provided.")
-        print("Run with the follwoing format:\nOBJECT_PATH={your collection path} poetry run uvicorn python_activator.api:app --reload")
-        sys.exit(0)
+    uvicorn.run(app, host="127.0.0.1", port=8000)
