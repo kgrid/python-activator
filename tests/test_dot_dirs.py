@@ -1,4 +1,5 @@
 from src.python_activator.api import install_module
+from src.python_activator.manifest import ko_object
 import os
 import sys
 import importlib
@@ -9,13 +10,13 @@ def test_basics():
     assert os.path.abspath("etc/pyshelf").endswith("etc/pyshelf")
     
     directory="/home/faridsei/dev/code/python-activator/etc/pyshelf/"
-    sys.path.append(        directory    )
+    #sys.path.append(        directory    )
     
-    install_module(directory, "python-multiartifact-v1-0")
-    del sys.modules["ko_folder"]
-    sys.path.remove(
-        directory
-    )
+    install_module(directory, ko_object("python-multiartifact-v1-0","Ready to install"))
+    #del sys.modules["ko_folder"]
+    #sys.path.remove(
+    #    directory
+    #)
 
 def test_direct_import_of_module():
     

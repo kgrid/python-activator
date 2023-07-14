@@ -11,23 +11,17 @@ import json
 import typer
 from python_activator.manifest import *
 
+
 class knowledge_object:
-    def __init__(self, name, status, function ,id):
-        self.id= id
+    def __init__(self, name, status, function, id):
+        self.id = id
         self.name = name
         self.status = status
         self.function = function
 
-class CustomEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, knowledge_object):
-            return {'name': obj.name, 'status': obj.status, 'id': obj.id}
-        return super().default(obj)
 
 app = FastAPI()
-Knowledge_Objects = (
-    {}
-)
+Knowledge_Objects = {}
 
 # this dictionary used to keep loaded objects (key:is and value:function)
 object_directory = ""  # used for location of knowledge objects
@@ -39,9 +33,8 @@ def hello():
 
 
 @app.get("/endpoints")
-def hello():
-    return json.loads(json.dumps(Knowledge_Objects,cls=CustomEncoder, indent=4))
-
+def endpoints():
+    return Knowledge_Objects  # json.loads(json.dumps(Knowledge_Objects,cls=CustomEncoder, indent=4))
 
 
 # end point to expose all packages
@@ -52,7 +45,7 @@ async def execute_endpoint(
     # get the method
     if endpoint_key in Knowledge_Objects:
         function = Knowledge_Objects[endpoint_key].function
-        if function and Knowledge_Objects[endpoint_key].status=="Activated":
+        if function and Knowledge_Objects[endpoint_key].status == "Activated":
             # run the imported method and pass the request json
             # if content_type == 'application/json':
             data = await request.json()
@@ -62,7 +55,7 @@ async def execute_endpoint(
             result = function(data)
 
             return {"result": result}
-        elif Knowledge_Objects[endpoint_key].status!="Activated":
+        elif Knowledge_Objects[endpoint_key].status != "Activated":
             return {"result": Knowledge_Objects[endpoint_key].status}
         else:
             return {"result": "Knowledge object not found!"}
@@ -86,15 +79,13 @@ def install_requirements(modulepath):
 
 # look into the main directory that has all the packages and have the python ones installed
 def install_packages_from_directory(directory, manifest: dict):
-    for ko in manifest:        
+    for ko in manifest:
         install_module(directory, manifest[ko])
     list_installed_packages()
 
 
-def install_module(
-    directory, ko
-):  # TO DO: test how it works for windows installation
-    Knowledge_Objects[ko.name] = knowledge_object(ko.name,ko.status,None,"")
+def install_module(directory, ko):  # TO DO: test how it works for windows installation
+    Knowledge_Objects[ko.name] = knowledge_object(ko.name, ko.status, None, "")
 
     try:
         modulepath = directory + ko.name + "/"
@@ -102,13 +93,12 @@ def install_module(
         #########delete me: temporarily ignoring execute package
         if ko.name == "python-executive-v1.0":
             return
-        
-        if ko.status!="Ready for install":
+
+        if ko.status != "Ready for install":
             return
 
-
         Knowledge_Objects[ko.name].status = "Activating"
-        
+
         # get metadata and deployment files
         with open(modulepath + "deployment.yaml", "r") as file:
             deployment_data = yaml.safe_load(file)
@@ -116,11 +106,16 @@ def install_module(
             metadata = json.load(file)
         first_key = next(iter(deployment_data))
         second_key = next(iter(deployment_data[first_key]))
-        
+
         # do not install non python packages
         if deployment_data[first_key][second_key]["engine"] != "python":
             del Knowledge_Objects[ko.name]
-            Knowledge_Objects[metadata["@id"]] = knowledge_object(ko.name,"Knowledge object is not activated. It is not a python object.",None,metadata["@id"])
+            Knowledge_Objects[metadata["@id"]] = knowledge_object(
+                ko.name,
+                "Knowledge object is not activated. It is not a python object.",
+                None,
+                metadata["@id"],
+            )
             return
 
         # install requirements
@@ -140,17 +135,28 @@ def install_module(
         )
         mymethod = getattr(module, deployment_data[first_key][second_key]["function"])
         del Knowledge_Objects[ko.name]
-        Knowledge_Objects[metadata["@id"]] = knowledge_object(ko.name,"Activated",mymethod,metadata["@id"])
+        Knowledge_Objects[metadata["@id"]] = knowledge_object(
+            ko.name, "Activated", mymethod, metadata["@id"]
+        )
     except Exception as e:
-        Knowledge_Objects[ko.name].status="Faield activating with error: "+ repr(e)
+        Knowledge_Objects[ko.name].status = "Faield activating with error: " + repr(e)
+
 
 def list_installed_packages():
     print("-------------------\nPackages installed:")
-    #keys_list = list(KnowledgeObjects.keys())
-    print("{:<4}. {:<30} {:<30} {:<30}".format("","ID","NAME","STATUS"))
-    for i,item in  enumerate(Knowledge_Objects):
-        print("{:<4}. {:<30} {:<30} {:<30}".format(str(i),Knowledge_Objects[item].id,Knowledge_Objects[item].name[:30], Knowledge_Objects[item].status[:50]))
-    
+    # keys_list = list(KnowledgeObjects.keys())
+    #print(Knowledge_Objects)
+    print("{:<4}. {:<30} {:<30} {:<30}".format("", "ID", "NAME", "STATUS"))
+    for i, item in enumerate(Knowledge_Objects):
+        print(
+            "{:<4}. {:<30} {:<30} {:<30}".format(
+                str(i),
+                Knowledge_Objects[item].id,
+                Knowledge_Objects[item].name[:30],
+                Knowledge_Objects[item].status[:50],
+            )
+        )
+
     print("-------------------")
 
 
@@ -161,17 +167,20 @@ async def startup_event():
     object_directory = os.environ["COLLECTION_PATH"]
     manifest = process_manifest(object_directory)
     install_packages_from_directory(object_directory, manifest)
-    del os.environ["COLLECTION_PATH"]
-    del os.environ["MANIFEST_PATH"]
+    try:
+        del os.environ["COLLECTION_PATH"]
+        del os.environ["MANIFEST_PATH"]
+    except Exception as e:
+        print("error deleting env variables")
 
 
 # run virtual server when running this .py file directly for debugging. It will look for objects at {code folder}/pyshelf
 if __name__ == "__main__":
     print(">>>>>running with debug<<<<<")
-    os.environ["MANIFEST_PATH"]="/home/faridsei/dev/test/package/manifest.json"
-    #os.environ[
+    # os.environ["MANIFEST_PATH"]="/home/faridsei/dev/test/package/manifest.json"
+    # os.environ[
     #    "MANIFEST_PATH"
-    #] = "https://github.com/kgrid-objects/example-collection/releases/download/4.2.1/manifest.json"
+    # ] = "https://github.com/kgrid-objects/example-collection/releases/download/4.2.1/manifest.json"
     os.environ["COLLECTION_PATH"] = "/home/faridsei/dev/test/pyshelf/"
 
     uvicorn.run(app, host="127.0.0.1", port=8000)

@@ -8,15 +8,11 @@ cli = typer.Typer()
 @cli.command()
 def run(collection_path: str = "", manifest_path: str = ""):
     object_directory = set_object_directory(collection_path)
-    #manifest_path=set_manifest_path(manifest_path)
+   
     if manifest_path:
         os.environ["MANIFEST_PATH"]=manifest_path
     os.environ["COLLECTION_PATH"]=object_directory
     
-    #manifest = process_manifest(object_directory)
-
-    #install_packages_from_directory(object_directory, manifest)
-
     uvicorn.run(app, host="127.0.0.1", port=8000)
 
 
@@ -42,14 +38,7 @@ def set_object_directory(collection_path: str) -> str:
         object_directory += "/"
     return object_directory
 
-def set_manifest_path(manifest_path: str) -> str:
-    if manifest_path:
-        return manifest_path
-    elif os.environ.get("MANIFEST_PATH"):
-        return os.environ.get("MANIFEST_PATH")
-    else:
-        return manifest_path
-    
+   
     
 @cli.command()
 def version():

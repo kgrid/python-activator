@@ -20,7 +20,7 @@ def process_manifest(object_directory: str)->dict:
     # 0. if no manifest provided consider list of existing knowledge object folders as manifest
     if not manifest_path:
         for item in scanned_directories:
-            output_manifest[ko_name]=str.replace(item, ".zip", "")
+            output_manifest[str.replace(item, ".zip", "")]=ko_object(str.replace(item, ".zip", ""),"Ready for install")
         return output_manifest
 
     input_manifest, scanned_files = init_process(manifest_path, object_directory)
@@ -41,6 +41,7 @@ def process_manifest(object_directory: str)->dict:
             continue
 
         # 2. if zip file does not exists in the folder download it from local path or http (uses uri)
+        
         if not ko_filename in scanned_files:
             try:
                 urllib.request.urlretrieve(
