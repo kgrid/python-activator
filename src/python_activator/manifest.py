@@ -4,7 +4,7 @@ import pathlib
 import json
 import requests
 import os
-
+from pathlib import Path
 class ko_object:
     def __init__(self, name, status):
         self.name = name
@@ -45,7 +45,7 @@ def process_manifest(object_directory: str)->dict:
         if not ko_filename in scanned_files:
             try:
                 urllib.request.urlretrieve(
-                    get_uri(ko_path), object_directory + ko_filename
+                    get_uri(ko_path), os.path.join(Path(object_directory),ko_filename)
                 )
                 output_manifest[ko_name].status="Package zip file downloaded"     
             except Exception as e:
@@ -59,7 +59,7 @@ def process_manifest(object_directory: str)->dict:
 
         # 3. extract the knowledge object from the zip file in object directory
         try:
-            with zipfile.ZipFile(object_directory + ko_filename, "r") as zip_ref:
+            with zipfile.ZipFile(os.path.join(Path(object_directory),ko_filename), "r") as zip_ref:
              zip_ref.extractall(object_directory)
         except Exception as e:
             output_manifest[ko_name].status="Error unziping: " + + repr(e) 
@@ -97,13 +97,12 @@ def init_process(manifest_path, object_directory):
     return input_manifest, scanned_files
 
 
-def set_ko_info(manifest_path, item):
-    ko_path = item
-    if not "/" in item:  # extract knowledge object name and path
-        ko_name = str.replace(item, ".zip", "")
-        ko_path = os.path.dirname(manifest_path) + "/" + item
-    else:
-        ko_name = str.replace(os.path.basename(item), ".zip", "")
+def set_ko_info(manifest_path, manifest_item):
+    ko_path = manifest_item
+    if not os.path.isdir(manifest_item):  # extract knowledge object path
+        ko_path = os.path.dirname(manifest_path) + "/" + manifest_item
+      
+    ko_name = os.path.splitext(os.path.basename(manifest_item))[0]
 
     ko_filename = os.path.basename(ko_path)
     return ko_path, ko_name, ko_filename

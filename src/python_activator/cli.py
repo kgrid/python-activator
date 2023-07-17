@@ -8,15 +8,17 @@ cli = typer.Typer()
 @cli.command()
 def run(collection_path: str = "", manifest_path: str = ""):
     object_directory = set_object_directory(collection_path)
-   
+    print("object directory is "+object_directory)
     if manifest_path:
         os.environ["MANIFEST_PATH"]=manifest_path
-    os.environ["COLLECTION_PATH"]=object_directory
+    if object_directory:
+        os.environ["COLLECTION_PATH"]=object_directory
     
     uvicorn.run(app, host="127.0.0.1", port=8000)
 
 
 def set_object_directory(collection_path: str) -> str:
+    object_directory=""
     if (
         collection_path
     ):  # 1. run and pass --collection-path as input parameter:   "python-activator run --collection_path={your collection path}"
@@ -28,14 +30,12 @@ def set_object_directory(collection_path: str) -> str:
         print(">>>>>running with environment variable<<<<<")
         object_directory = os.environ.get("COLLECTION_PATH")
         del os.environ["COLLECTION_PATH"]
-    else:  # 3. run with python-activator run with no path provided. will consider {root of app}/pyshelf as object location if any
+    else:  # 3. run with python-activator run with no path provided. will consider {root of app}/pyshelf by default
         print(">>>>>running with default path (./pyshelf/)<<<<<")
-        object_directory = os.getcwd() + "/pyshelf"
-        # 4. run debugger which will look for objects at hardcoded path in api.py
-        # 5. run install packages from the given COLLECTION_PATH if the app is starated using "COLLECTION_PATH={your collection path} poetry run uvicorn python_activator.api:app --reload". The code to handle this is in api.py. If running in a virtual environment you could also use "COLLECTION_PATH={your collection path} uvicorn python_activator.api:app --reload"
+    
+    # 4. run debugger which will look for objects at hardcoded path in api.py
+    # 5. run install packages from the given COLLECTION_PATH if the app is starated using "COLLECTION_PATH={your collection path} poetry run uvicorn python_activator.api:app --reload". The code to handle this is in api.py. If running in a virtual environment you could also use "COLLECTION_PATH={your collection path} uvicorn python_activator.api:app --reload"
 
-    if object_directory[-1] != "/":
-        object_directory += "/"
     return object_directory
 
    

@@ -1,9 +1,13 @@
 from fastapi import FastAPI, Request, Header
+from fastapi.responses import JSONResponse,RedirectResponse
+from fastapi.responses import HTMLResponse
+from fastapi.openapi.docs import get_swagger_ui_html
+
 import sys
 import uvicorn
 import importlib
 from importlib import util, metadata
-
+from pathlib import Path
 from os import path
 import subprocess
 import yaml
@@ -13,12 +17,12 @@ from python_activator.manifest import *
 
 
 class knowledge_object:
-    def __init__(self, name, status, function, id):
+    def __init__(self, name, status, function, id, url):
         self.id = id
         self.name = name
         self.status = status
         self.function = function
-
+        self.url = url
 
 app = FastAPI()
 Knowledge_Objects = {}
@@ -27,18 +31,39 @@ Knowledge_Objects = {}
 object_directory = ""  # used for location of knowledge objects
 
 
-@app.get("/")
-def hello():
-    return {"Hello": "World9"}
 
+@app.get("/docs", include_in_schema=False)
+async def custom_swagger_ui_html():
+    return get_swagger_ui_html(
+        openapi_url="/openapi.json",
+        title="API Documentation",
+        swagger_js_url="/static/swagger-ui-bundle.js",
+        swagger_css_url="/static/swagger-ui.css",
+    )
+
+@app.get("/openapi.json", include_in_schema=False)
+async def get_openapi():
+    return app.openapi()
+
+@app.get("/", response_class=HTMLResponse, include_in_schema=False)
+async def root():
+    response = RedirectResponse(url="/docs")
+    return response
 
 @app.get("/endpoints")
-def endpoints():
-    return Knowledge_Objects  # json.loads(json.dumps(Knowledge_Objects,cls=CustomEncoder, indent=4))
+def endpoints(request: Request):
+    for obj_key in Knowledge_Objects:
+        Knowledge_Objects[obj_key].url= request.url.__str__()+"/"+Knowledge_Objects[obj_key].id
+    return Knowledge_Objects  
 
+@app.get("/endpoints/{endpoint_key:path}")
+async def endpoint_detail(
+    endpoint_key: str
+):
+    return Knowledge_Objects[endpoint_key]
 
 # end point to expose all packages
-@app.post("/ep/{endpoint_key:path}")
+@app.post("/endpoints/{endpoint_key:path}")
 async def execute_endpoint(
     endpoint_key: str, request: Request, content_type: str = Header(...)
 ):
@@ -65,7 +90,7 @@ async def execute_endpoint(
 
 # Install requirements using the requirements.txt file for each package
 def install_requirements(modulepath):
-    dependency_requirements = modulepath + "requirements.txt"
+    dependency_requirements = Path(modulepath).joinpath( "requirements.txt")
 
     # To Do: using pip install bellow explore installing requirements in a folder specific to the ko
     #       you may need to add that folder to the sys.path
@@ -85,7 +110,7 @@ def install_packages_from_directory(directory, manifest: dict):
 
 
 def install_module(directory, ko):  # TO DO: test how it works for windows installation
-    Knowledge_Objects[ko.name] = knowledge_object(ko.name, ko.status, None, "")
+    Knowledge_Objects[ko.name] = knowledge_object(ko.name, ko.status, None, "","")
 
     try:
         modulepath = directory + ko.name + "/"
@@ -115,6 +140,7 @@ def install_module(directory, ko):  # TO DO: test how it works for windows insta
                 "Knowledge object is not activated. It is not a python object.",
                 None,
                 metadata["@id"],
+                ""
             )
             return
 
@@ -136,7 +162,7 @@ def install_module(directory, ko):  # TO DO: test how it works for windows insta
         mymethod = getattr(module, deployment_data[first_key][second_key]["function"])
         del Knowledge_Objects[ko.name]
         Knowledge_Objects[metadata["@id"]] = knowledge_object(
-            ko.name, "Activated", mymethod, metadata["@id"]
+            ko.name, "Activated", mymethod, metadata["@id"],""
         )
     except Exception as e:
         Knowledge_Objects[ko.name].status = "Faield activating with error: " + repr(e)
@@ -164,7 +190,14 @@ def list_installed_packages():
 @app.on_event("startup")
 async def startup_event():
     print(">>>>>> running startup event")
-    object_directory = os.environ["COLLECTION_PATH"]
+    if os.environ.get(
+        "COLLECTION_PATH"
+    ):
+        object_directory = os.path.join(Path(os.environ["COLLECTION_PATH"]), '')
+    else:    
+        object_directory=os.path.join( Path(os.getcwd()).joinpath("pyshelf") , ''  )      
+   
+    print(object_directory)
     manifest = process_manifest(object_directory)
     install_packages_from_directory(object_directory, manifest)
     try:
