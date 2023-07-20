@@ -1,5 +1,6 @@
 from python_activator.api import *
 import typer
+import importlib
 
 cli = typer.Typer()
 

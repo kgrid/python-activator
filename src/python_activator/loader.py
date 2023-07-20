@@ -6,14 +6,36 @@ import json
 import os
 from io import BytesIO
 from pathlib import Path
+from fastapi import HTTPException
 
-class ko_object:
-    def __init__(self, name, status):
+class knowledge_object:
+    def __init__(self, name, status, function=None, id="", url="", entry=""):
+        self.id = id
         self.name = name
         self.status = status
+        self.function = function
+        self.url = url
+        self.entry = entry
+
+    async def execute(self, request):
+        data = (
+            await request.json()
+        )  # if content_type == 'application/json': data = await request.json() else:   data="test"
+        try:
+            return self.function(data)
+        except TypeError as e:
+            raise HTTPException(
+                status_code=422, 
+                detail={"status": self.status, "cause": e.__cause__}
+                )
 
 
-def load_packages(object_directory: str) -> dict:
+def load_packages() -> dict:
+    if os.environ.get("COLLECTION_PATH"):
+        object_directory = os.path.join(Path(os.environ["COLLECTION_PATH"]), "")
+    else:
+        object_directory = os.path.join(Path(os.getcwd()).joinpath("pyshelf"), "")
+
     manifest_path = os.environ.get("MANIFEST_PATH")
     scanned_directories = [f.name for f in os.scandir(object_directory) if f.is_dir()]
     output_manifest = {}
@@ -21,7 +43,7 @@ def load_packages(object_directory: str) -> dict:
     # 0. if no manifest provided consider list of existing knowledge object folders as manifest
     if not manifest_path:
         for item in scanned_directories:
-            output_manifest[str.replace(item, ".zip", "")] = ko_object(
+            output_manifest[str.replace(item, ".zip", "")] = knowledge_object(
                 str.replace(item, ".zip", ""), "Ready for install"
             )
             
@@ -29,7 +51,7 @@ def load_packages(object_directory: str) -> dict:
             with open(Path(object_directory).joinpath('manifest_generated.json'), 'w') as json_file:
                 json.dump({"manifest": [obj.name for obj in output_manifest.values()]}, json_file)
 
-        return output_manifest
+        return output_manifest, object_directory
 
     with urllib.request.urlopen(get_uri(manifest_path)) as response:
         input_manifest = json.loads(response.read())["manifest"] #load manifest 
@@ -42,7 +64,7 @@ def load_packages(object_directory: str) -> dict:
            ko_path = os.path.dirname(manifest_path) + "/" + manifest_item
         ko_name = os.path.splitext(os.path.basename(manifest_item))[0]
 
-        output_manifest[ko_name] = ko_object(ko_name, "")
+        output_manifest[ko_name] = knowledge_object(ko_name, "")
 
         # 1. if knowledge object already in the collection directory continue to the next ko in list
         if ko_name in scanned_directories:
@@ -60,12 +82,12 @@ def load_packages(object_directory: str) -> dict:
 
         output_manifest[ko_name].status = "Ready for install"
 
-    return output_manifest
+    return output_manifest, object_directory
 
 
 def get_uri(path: str):
     uri = path
-    if os.path.exists(path):  # if a local path create the URI
+    if os.path.isabs(path):  # if a local path create the URI
         uri = pathlib.Path(path).as_uri()  # adds file:// if local path
     return uri
 

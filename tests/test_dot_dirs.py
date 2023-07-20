@@ -1,5 +1,5 @@
-from python_activator.api import install_module
-from python_activator.loader import ko_object
+from python_activator.installer import install_module
+from python_activator.loader import knowledge_object
 import os
 import sys
 import importlib
@@ -12,7 +12,7 @@ def test_basics():
     directory="/home/faridsei/dev/code/python-activator/etc/pyshelf/"
     #sys.path.append(        directory    )
     
-    install_module(directory, ko_object("python-multiartifact-v1-0","Ready to install"))
+    install_module(directory, knowledge_object("python-multiartifact-v1-0","Ready to install"))
     #del sys.modules["ko_folder"]
     #sys.path.remove(
     #    directory

@@ -71,14 +71,18 @@ def test_using_uri_to_extract_zip():
             zfile.extractall(destenation_path)
     assert os.path.exists(destenation_path + "/python-multimime-v1.0")
 
-
+def test_get_uri():
+    test=get_uri("/home/faridsei/dev/test/manifest/python-multimime-v1.0.zip")
+    test=get_uri("https://github.com/kgrid-objects/example-collection/releases/download/4.2.1/python-multimime-v1.0.zip")
+    assert 1!=1
+    
 # def test_formatting_dictionary_of_object_to_json():
 #    assert 1!=1
 
 
 def get_uri(path: str):
     uri = path
-    if os.path.exists(path):  # if a local path create the URI
+    if os.path.isabs(path):  # if a local path create the URI
         uri = pathlib.Path(path).as_uri()  # adds file:// if local path
     return uri
 
