@@ -5,7 +5,7 @@ import pathlib
 import json
 import os
 from io import BytesIO
-
+from pathlib import Path
 
 class ko_object:
     def __init__(self, name, status):
@@ -24,6 +24,11 @@ def process_manifest(object_directory: str) -> dict:
             output_manifest[str.replace(item, ".zip", "")] = ko_object(
                 str.replace(item, ".zip", ""), "Ready for install"
             )
+            
+            #create a manifest
+            with open(Path(object_directory).joinpath('manifest_generated.json'), 'w') as json_file:
+                json.dump({"manifest": [obj.name for obj in output_manifest.values()]}, json_file)
+
         return output_manifest
 
     with urllib.request.urlopen(get_uri(manifest_path)) as response:
@@ -55,7 +60,6 @@ def process_manifest(object_directory: str) -> dict:
 
         output_manifest[ko_name].status = "Ready for install"
 
-    # create a new manifest with full path
     return output_manifest
 
 
