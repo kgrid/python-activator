@@ -1,14 +1,16 @@
-from fastapi import FastAPI, Request, Header, HTTPException
-from fastapi.openapi.docs import get_swagger_ui_html
-import sys
-import uvicorn
+import os
 import importlib
-from pathlib import Path
-from os import path
-import subprocess
-import yaml
 import json
-from python_activator.manifest import *
+import subprocess
+import sys
+from pathlib import Path
+
+import uvicorn
+import yaml
+from fastapi import FastAPI, Header, HTTPException, Request
+from fastapi.openapi.docs import get_swagger_ui_html
+
+from python_activator.manifest import process_manifest
 
 
 class knowledge_object:
@@ -27,7 +29,10 @@ class knowledge_object:
         try:
             return self.function(data)
         except TypeError as e:
-            raise HTTPException(status_code=422, detail=self.status)
+            raise HTTPException(
+                status_code=422, 
+                detail={"status": self.status, "cause": e.__cause__}
+                )
 
 
 app = FastAPI()
@@ -97,7 +102,7 @@ def install_requirements(modulepath):
     #       you may need to add that folder to the sys.path
 
     # uses 'pip install -r requirements.txt' to install requirements
-    if path.exists(dependency_requirements):
+    if os.path.exists(dependency_requirements):
         subprocess.check_call(
             [sys.executable, "-m", "pip", "install", "-r", dependency_requirements]
         )

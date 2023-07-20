@@ -1,5 +1,5 @@
-from src.python_activator.api import install_module
-from src.python_activator.manifest import ko_object
+from python_activator.api import install_module
+from python_activator.manifest import ko_object
 import os
 import sys
 import importlib
