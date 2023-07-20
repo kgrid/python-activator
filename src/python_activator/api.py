@@ -10,7 +10,7 @@ import yaml
 from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.openapi.docs import get_swagger_ui_html
 
-from python_activator.manifest import process_manifest
+from python_activator.loader import load_packages
 
 
 class knowledge_object:
@@ -109,7 +109,7 @@ def install_requirements(modulepath):
 
 
 # look into the main directory that has all the packages and have the python ones installed
-def install_packages_from_directory(directory, manifest: dict):
+def install_packages(directory, manifest: dict):
     for ko in manifest:
         install_module(directory, manifest[ko])
     list_installed_packages()
@@ -203,8 +203,8 @@ async def startup_event():
     else:
         object_directory = os.path.join(Path(os.getcwd()).joinpath("pyshelf"), "")
 
-    manifest = process_manifest(object_directory)
-    install_packages_from_directory(object_directory, manifest)
+    manifest = load_packages(object_directory)
+    install_packages(object_directory, manifest)
     try:
         del os.environ["COLLECTION_PATH"]
         del os.environ["MANIFEST_PATH"]

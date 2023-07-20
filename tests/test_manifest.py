@@ -7,12 +7,12 @@ from urllib.parse import urlparse
 import requests
 import urllib
 
-from python_activator.manifest import process_manifest
+from python_activator.loader import load_packages
 
 
 def test_process_local_manifest():
     os.environ["MANIFEST_PATH"] = "/home/faridsei/dev/test/manifest/manifest.json"
-    process_manifest("/home/faridsei/dev/test/pyshelf/")
+    load_packages("/home/faridsei/dev/test/pyshelf/")
     del os.environ["MANIFEST_PATH"]
 
     # Assert
@@ -23,7 +23,7 @@ def test_process_internet_manifest():
     os.environ[
         "MANIFEST_PATH"
     ] = "https://github.com/kgrid-objects/example-collection/releases/download/4.2.1/manifest.json"
-    process_manifest("/home/faridsei/dev/test/pyshelf/")
+    load_packages("/home/faridsei/dev/test/pyshelf/")
     del os.environ["MANIFEST_PATH"]
 
     # Assert
@@ -31,7 +31,7 @@ def test_process_internet_manifest():
 
 
 def test_process_no_manifest():
-    process_manifest("/home/faridsei/dev/test/pyshelf/")
+    load_packages("/home/faridsei/dev/test/pyshelf/")
 
     # Assert
     assert 1 == 1

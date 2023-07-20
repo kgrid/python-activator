@@ -13,7 +13,7 @@ class ko_object:
         self.status = status
 
 
-def process_manifest(object_directory: str) -> dict:
+def load_packages(object_directory: str) -> dict:
     manifest_path = os.environ.get("MANIFEST_PATH")
     scanned_directories = [f.name for f in os.scandir(object_directory) if f.is_dir()]
     output_manifest = {}
