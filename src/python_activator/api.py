@@ -1,8 +1,8 @@
 import os
 from pathlib import Path
+from typing import Any
 import uvicorn
-from fastapi import FastAPI, Header, HTTPException, Request
-from fastapi.openapi.docs import get_swagger_ui_html
+from fastapi import FastAPI, Header, HTTPException, Request,Body
 from python_activator.loader import load_packages
 from python_activator.installer import install_packages
 
@@ -11,30 +11,15 @@ app = FastAPI()
 Knowledge_Objects = {}
 object_directory = ""  # used for location of knowledge objects
 
-
-@app.get("/docs", include_in_schema=False)
-async def custom_swagger_ui_html():
-    return get_swagger_ui_html(
-        openapi_url="/openapi.json",
-        title="API Documentation",
-        swagger_js_url="/static/swagger-ui-bundle.js",
-        swagger_css_url="/static/swagger-ui.css",
-    )
-
-
-@app.get("/openapi.json", include_in_schema=False)
-async def get_openapi():
-    return app.openapi()
-
-
 @app.get(
     "/",
     include_in_schema=False,
 )
 async def root(request: Request):
     return {
-        "endpoints": request.url.__str__() + "endpoints",
-        "execute": request.url.__str__() + "endpoints/{id}",
+        "endpoints" : request.url.__str__() + "endpoints",
+        "fastapi documentation" : request.url.__str__() + "docs",
+        "execute" : request.url.__str__() + "endpoints/{id}",
     }
 
 
@@ -55,10 +40,10 @@ async def endpoint_detail(endpoint_key: str):
 # endpoint to expose all packages
 @app.post("/endpoints/{endpoint_key:path}")
 async def execute_endpoint(
-    endpoint_key: str, request: Request, content_type: str = Header(...)
+    endpoint_key: str, body: Any = Body(...), content_type: str = Header(default="application/json")
 ):
     try:
-        result = await Knowledge_Objects[endpoint_key].execute(request)
+        result = await Knowledge_Objects[endpoint_key].execute(body)
         return result
     except KeyError as e:
         raise HTTPException(

@@ -17,12 +17,9 @@ class knowledge_object:
         self.url = url
         self.entry = entry
 
-    async def execute(self, request):
-        data = (
-            await request.json()
-        )  # if content_type == 'application/json': data = await request.json() else:   data="test"
+    async def execute(self, body):
         try:
-            return self.function(data)
+            return self.function(body)
         except TypeError as e:
             raise HTTPException(
                 status_code=422, 
