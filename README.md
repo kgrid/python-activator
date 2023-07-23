@@ -1,81 +1,143 @@
+## Install the `python-activator`
 
-Note: Multiartifact packages should not have a dot in their name as it causes issues for python domain names. Packages can have any name on their folder. If you are providing unzipped packages please rename your multiartifact packages like the following example: from  python-multiartifact-v1.0 to python-multiartifact-v1-0.
+The `python-activator` can be installed from a binary wheel (.whl)  or a source (tar.gx) available in the **Releases** section of the Github repo. It is not currently published to the Python Package Index (PyPI). Please check [Releases](https://github.com/kgrid/python-activator/releases) for the latest versions.
 
-## For developers to debug code:
-1. set virtual env
-    
-    1.1 use `poetry env use {python-version}`
+```bash
+# install from a release
+pip install https://github.com/kgrid/python-activator/releases/download/0.4-alpha/python_activator-0.1.0-py3-none-any.whl  
+```
 
-    1.2 use `poetry shell` to create and activate a virtual env
+See the [development notes](#development) for [other ways to install the app](#other-ways-to-install-the-app).
 
-2. Open the app in vscode using `code .` from root of the project
-
-3. While in the root of the project in your terminal install dependencies:
-    
-    `poetry install`
-
-4. Open api.py and set breakpoints and run debugger by clicking on Run and Debug icon, selecting Run and Debug and setting the file type to python if not already done. Feel free to change the collection path which is hardcoded for debugging in api.py.
-
-## For installing the app from .whl
-
-1. Create build files (.whl and .tar.gz) using the following command in the root of the app
-
-    `poetry build`
-
-2. Install the app from .whl file using:
-    `pip install {path}/python-activator/dist/python_activator-0.1.0-py3-none-any.whl --force-reinstall`
 
 ## Run the app
-There are 5 different ways of running this app. The last 4 require the app to be installed either using poetry install  for development environment or installingfrom the .whl file for prod
 
-1. Run the app using debugger (object_directory and manifest_path are hardcoded at the buttom of api.py for debugging)
+> **Note**
+> To use the command line interface (CLI) you must install the CLI as an _extra_. Add `[cli]` to the end of the `.whl` package name and quote the entire package path.
 
-2. Use CLI to run and pass --collection-path and --manifest-path as input parameters:   
+```bash 
+pip install "https://github.com/kgrid/python-activator/releases/download/0.4-alpha/python_activator-0.1.0-py3-none-any.whl[cli]"
+```
 
-`python-activator run --collection-path={your collection path} --manifest-path={your manifest path}`
+### Use CLI to run 
 
-3. Use CLI to run the app by setting COLLECTION_PATH and MANIFEST_PATH as an environment variables:    
+Pass --collection-path and --manifest-path as input parameters:   
 
-`COLLECTION_PATH={your collection path} MANIFEST_PATH={your manifest path} python-activator run`
+```bash
+python-activator run --collection-path=<path> --manifest-path=<path>`
+```
+ or set `COLLECTION_PATH` and/or `MANIFEST_PATH` as an environment variables. If not specified `COLLECTION_PATH` defaults to `./pyshelf`. There is no default for `MANIFEST_PATH``.
 
-4. Use cli with no path provided. It will consider {root of app}/pyshelf as object location.
+### Run the application module directly 
 
-`python-activator run`
+The `python-activator` uses [FastAPI] which needs a WSGI/ASGI server like `uvicorn` to serve it's API. If you've installed the `[cli]` extras, `uvicorn` should be available. Otherwise you can `pip install uvicorn`. See 
 
-5.Run the app using uvicorn command and pass the object path using environment variables. 
+```bash
+uvicorn --version
+# Running uvicorn 0.23.1 with CPython 3.11.4 on Darwin
+COLLECTION_PATH=<path> uvicorn python_activator.api:app --reload` 
+```
 
-`COLLECTION_PATH={your collection path} poetry run uvicorn python_activator.api:app --reload` 
+> **Note:** 
+> Don't use `--reload` outside of development workflows 
 
-If running in a virtual environment you could also use 
+> **Note** 
+> It is strongly reccommended taht you run the `python-activator` in a virtual environment to avoid placing modules loaded at runtime in your global space. Tools like `venv`, `poetry`, `pdm`, `pyenv`, etc. can make it significantly easier manage local virtual environments.
 
-`COLLECTION_PATH={your collection path} MANIFEST_PATH={your manifest path} uvicorn python_activator.api:app --reload`
-
-## Use loaded knowledge objects
-Use http://127.0.0.1:8000/endpoints to get the endpoints and their status
+#### Test the loaded knowledge objects
+Use http://127.0.0.1:8000/endpoints to get the endpoints and their status. Each endpoint is accssible via an http POST reqest (e.g.using postman) to http://127.0.0.1:8000/endpoints/{id}  with a json body.
 
 
-Send an http POST reqest using postman to http://127.0.0.1:8000/ep/{package id from metadata}  to test it. Provide input using the approperiate format in the body of the request. i.e. json
-    
-    use http://127.0.0.1:8000/ep/python/simple/v1.0
-    with 
-    `{
+#### python-simple-v1.0.zip:
+
+`POST http://127.0.0.1:8000/ep/python/simple/v1.0` with body:
+```json
+{
     "name":"farid",
     "spaces":10
-    }`
-    for python-simple-v1.0.zip
+}
+```
 
-    and http://127.0.0.1:8000/ep/python/multiartifact/v1.0 with 
-    `{
+#### for python-multiartifact-v1-0
+
+`POST http://127.0.0.1:8000/ep/python/multiartifact/v1.0` with body:
+```json
+{
     "name":"farid",
     "spaces":10,
     "size":25
-    }`
-    for python-multiartifact-v1-0
+}
+```
 
 
 
+## Development
+
+### Setting up the project
+
+The python-activator is a Poetry project with a `src/` layout. Poetry is use to manage dependencies, build the project, and help with teh developer workflow.
+
+Make sure you have Python 3.10+ installed. You will use use `poetry` to create a virtual environment, install the app and it's dependencies on your machine (from source, editable, by default, includes dev dependencies)
+
+```bash
+poetry env use {python-version}
+poetry install
+```
+Open the app in your IDE from root of the project. You may want to start a `poetry` shell.
+
+```bash
+poetry shell
+code .  
+# or run wrapped in a virtual environment
+poetry run code .
+```
+
+You may have to point your IDE to `poetry`'s virtual environment (IDE dependant). You may also have to initialize or relaunch in-IDE terminal sessions. You can check with 
+
+```bash
+poetry env info
+```
+Your IDE's Python tooling and testing should work as for any Python project. Find out more about using `poetry` to manage dependencies, and build, maintainm, and publish projects here at [python-poetry.org](https://python-poetry.org/).
+
+### Using the example collection
+
+Check out the KO example collection from https://github.com/kgrid-objects/example-collection and start the `python-activator`. 
+
+```bash
+# for the latest versions
+git clone https://github.com/kgrid-objects/example-collection.git
+COLLECTION_PATH=../example-collection/collection 
+uvicorn python_activator.api:app 
+```
+
+Or start the `python-activator` with a manifest and it will download objects to a local folder before installing them.
+
+```bash
+# Starting with a released collection
+MANIFEST_PATH=https://github.com/kgrid-objects/example-collection/releases/download/4.2.1/manifest.json 
+uvicorn python_activator.api:app 
+```
+
+### Other ways to install the app
+
+You may want to use `--force-reinstall` when testing to replace the packeage in the current environment.
+
+#### From local source or GitHub
+```bash
+pip install path/to/src/python-activator --force-reinstall
+# or
+pip install https://github.com/kgrid/python-activator.git  # from source --force-reinstall
+```
+
+#### from local builds (from `dist/`) during development
+
+```bash
+pip install path/to/src/python-activator/dist/python_activator-0.1.0-py3-none-any.whl
+```
+ 
 
 
+## Notes
 
-
-
+### Known issues
+Note: Multiartifact packages should not have a dot in their name as it causes issues for python domain names. Packages can have any name on their folder. If you are providing unzipped packages please rename your multiartifact packages like the following example: from  python-multiartifact-v1.0 to python-multiartifact-v1-0.
