@@ -7,6 +7,7 @@ import os
 from io import BytesIO
 from pathlib import Path
 from fastapi import HTTPException
+from urllib import parse
 
 class knowledge_object:
     def __init__(self, name, status, function=None, id="", url="", entry=""):
@@ -50,15 +51,12 @@ def load_packages() -> dict:
 
         return output_manifest, object_directory
 
-    with urllib.request.urlopen(get_uri(manifest_path)) as response:
-        input_manifest = json.loads(response.read())["manifest"] #load manifest 
+    manifest_uri,resource=open_resource(manifest_path,"")
+    input_manifest=json.loads(resource.read())["manifest"] #load manifest 
 
     # for each item in the manifest
     for i, manifest_item in enumerate(input_manifest):
-        ko_path = manifest_item
 
-        if not os.path.isabs(manifest_item) and not is_url(manifest_item):  # extract knowledge object path
-           ko_path = os.path.dirname(manifest_path) + "/" + manifest_item
         ko_name = os.path.splitext(os.path.basename(manifest_item))[0]
 
         output_manifest[ko_name] = knowledge_object(ko_name, "")
@@ -70,9 +68,14 @@ def load_packages() -> dict:
 
         # 2. extract the knowledge object from the zip file in the uri (local or remote) in object directory
         try:
-            with urllib.request.urlopen(get_uri(ko_path)) as response:
-                with zipfile.ZipFile(BytesIO(response.read())) as zfile:
-                    zfile.extractall(object_directory)
+            ko_uri,resource=open_resource(manifest_path,manifest_item)
+            with resource:
+                 with zipfile.ZipFile(BytesIO(resource.read())) as zfile:
+                     zfile.extractall(object_directory)
+                     
+        except TypeError as e:
+            output_manifest[ko_name].status = "Zip file not found: " + repr(e)
+            continue             
         except Exception as e:
             output_manifest[ko_name].status = "Error unziping: " + repr(e)
             continue
@@ -82,12 +85,15 @@ def load_packages() -> dict:
     return output_manifest, object_directory
 
 
-def get_uri(path: str):
-    uri = path
-    if os.path.isabs(path):  # if a local path create the URI
-        uri = pathlib.Path(path).as_uri()  # adds file:// if local path
-    return uri
-
-def is_url(string):
-    parsed_url = urlparse(string)
-    return all([parsed_url.scheme, parsed_url.netloc])
+def open_resource(base,relative):
+    if os.path.isabs(base):  # if a local path create the URI
+        base = pathlib.Path(base).as_uri()  # adds file:// if local path
+        
+    resolved=parse.urljoin(base, relative)
+    try:
+        resource=urllib.request.urlopen(resolved)
+    except:
+        resource=None    
+        
+    return resolved, resource
+    

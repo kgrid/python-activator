@@ -1,2 +1,0 @@
-tinyhtml==1.0.0b1
-leftpad==0.1.2
