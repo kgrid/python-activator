@@ -50,7 +50,7 @@ Use http://127.0.0.1:8000/endpoints to get the endpoints and their status. Each 
 
 #### python-simple-v1.0.zip:
 
-`POST http://127.0.0.1:8000/ep/python/simple/v1.0` with body:
+`POST http://127.0.0.1:8000/endpoints/python/simple/v1.0` with body:
 ```json
 {
     "name":"John Doe",
@@ -60,7 +60,7 @@ Use http://127.0.0.1:8000/endpoints to get the endpoints and their status. Each 
 
 #### for python-multiartifact-v1-0
 
-`POST http://127.0.0.1:8000/ep/python/multiartifact/v1.0` with body:
+`POST http://127.0.0.1:8000/endpoints/python/multiartifact/v1.0` with body:
 ```json
 {
     "name":"John Doe",
