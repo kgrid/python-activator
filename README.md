@@ -53,8 +53,8 @@ Use http://127.0.0.1:8000/endpoints to get the endpoints and their status. Each 
 `POST http://127.0.0.1:8000/ep/python/simple/v1.0` with body:
 ```json
 {
-    "name":"farid",
-    "spaces":10
+    "name":"John Doe",
+    "spaces":15
 }
 ```
 
@@ -63,8 +63,8 @@ Use http://127.0.0.1:8000/endpoints to get the endpoints and their status. Each 
 `POST http://127.0.0.1:8000/ep/python/multiartifact/v1.0` with body:
 ```json
 {
-    "name":"farid",
-    "spaces":10,
+    "name":"John Doe",
+    "spaces":15,
     "size":25
 }
 ```
