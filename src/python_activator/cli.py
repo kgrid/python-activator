@@ -9,7 +9,7 @@ cli = typer.Typer()
 
 
 @cli.callback(invoke_without_command=True, no_args_is_help=True)
-def no_cammand(
+def no_command(
     version: Optional[bool] = typer.Option(None, "-v", "--version", is_eager=True)
 ):
     if version:

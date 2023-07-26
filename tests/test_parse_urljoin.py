@@ -49,3 +49,7 @@ def test_urlparse():
     base_uri = "file:///example/resources/manifest.json"
     relative_path = ""
     assert parse.urljoin(base_uri, relative_path)=="file:///example/resources/manifest.json"
+    
+    base_uri = ""
+    relative_path = "file:///example/resources/manifest.json"
+    assert parse.urljoin(base_uri, relative_path)=="file:///example/resources/manifest.json"
