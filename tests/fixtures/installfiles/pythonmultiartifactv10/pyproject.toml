@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "pythonmultiartifactv10"
+version = "0.1.0"
+description = "Python Multi Artifact V1.0"
+authors = ["Farid Seifi <farid.seifi@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+[tool.poetry.group.dev.dependencies]
+tinyhtml = "^1.2.0"
+leftpad = "^0.1.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

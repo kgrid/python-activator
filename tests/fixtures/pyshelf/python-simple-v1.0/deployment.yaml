@@ -1,0 +1,9 @@
+/welcome:
+  post:
+    artifact:
+      - src/welcome.py
+      - requirements.txt
+    engine: python
+    entry: src/welcome.py
+    function: welcome
+    checksum: 3H8QZ7Bj/pHohlyGnclhDv5TBVA=

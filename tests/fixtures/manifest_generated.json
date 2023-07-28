@@ -1,0 +1,42 @@
+[
+  {
+    "@id": "node/simple/v1.0",
+    "@type": "koio:KnowledgeObject",
+    "title": "the best hello world ever",
+    "identifier": "ark:/node/simple/v1.0",
+    "version": "v1.0",
+    "description": "A native node js object run through the proxy adapter with one artifact",
+    "contributors": "Kgrid Team Developer",
+    "keywords": [
+      "Hello",
+      "example"
+    ],
+    "hasServiceSpecification": "service.yaml",
+    "hasDeploymentSpecification": "deployment.yaml",
+    "hasPayload": "src/welcome.js",
+    "@context": [
+      "http://kgrid.org/koio/contexts/knowledgeobject.jsonld"
+    ],
+    "local_url": "node-simple-v1.0"
+  },
+  {
+    "@id": "python/simple/v1.0",
+    "@type": "koio:KnowledgeObject",
+    "title": "Simple Python KO example",
+    "identifier": "ark:/python/simple/v1.0",
+    "version": "v1.0",
+    "description": "A python object with a simple artifact",
+    "contributors": "Kgrid Team",
+    "keywords": [
+      "Hello",
+      "example"
+    ],
+    "hasServiceSpecification": "service.yaml",
+    "hasDeploymentSpecification": "deployment.yaml",
+    "hasPayload": "src/welcome.py",
+    "@context": [
+      "http://kgrid.org/koio/contexts/knowledgeobject.jsonld"
+    ],
+    "local_url": "python-simple-v1.0"
+  }
+]
