@@ -1,0 +1,10 @@
+[
+  { 
+      "@id": "python/simple/v1.0",
+      "url": "https://github.com/kgrid-objects/example-collection/releases/download/4.2.1/python-simple-v1.0.zip"
+  },
+  {
+      "@id": "node/simple/v1.0",
+      "url": "https://github.com/kgrid-objects/example-collection/releases/download/4.2.1/node-simple-v1.0.zip"
+  }
+]

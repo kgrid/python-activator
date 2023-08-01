@@ -1,8 +1,7 @@
 import importlib.metadata
 from typing import Optional
-
+from python_activator.Manifest import Manifest
 import typer
-
 from python_activator.api import *
 
 cli = typer.Typer()
@@ -15,7 +14,7 @@ def no_command(
     if version:
         try:
             v_str = importlib.metadata.version("python-activator")
-        except AttributeError as e: 
+        except AttributeError as e:
             print("N/A ({}) Are you running from source?".format(e.__doc__))
         except Exception as e:
             print("Version: N/A ({})".format(e.__doc__))
@@ -36,6 +35,40 @@ def run(collection_path: str = "", manifest_path: str = ""):
         os.environ["COLLECTION_PATH"] = object_directory
 
     uvicorn.run(app, host="127.0.0.1", port=8000)
+
+
+@cli.command()
+def create_manifest(collection_path: str = ""):
+    Manifest.generate_manifest_from_directory(collection_path)
+
+
+@cli.command()
+def load_from_manifest(collection_path: str = "", manifest_path: str = ""):
+    object_directory = set_object_directory(collection_path)
+    if manifest_path:
+        os.environ["MANIFEST_PATH"] = manifest_path
+    if object_directory:
+        os.environ["COLLECTION_PATH"] = object_directory
+    manifest = Manifest()
+    manifest.load_from_manifest()
+
+
+@cli.command()
+def install_loaded_kos(collection_path: str = ""):
+    object_directory = set_object_directory(collection_path)
+    if object_directory:
+        os.environ["COLLECTION_PATH"] = object_directory
+    manifest = Manifest()
+    manifest.install_loaded_objects()
+
+
+@cli.command()
+def uninstall_kos(collection_path: str = ""):
+    object_directory = set_object_directory(collection_path)
+    if object_directory:
+        os.environ["COLLECTION_PATH"] = object_directory
+    manifest = Manifest()
+    manifest.uninstall_objects()
 
 
 def set_object_directory(collection_path: str) -> str:

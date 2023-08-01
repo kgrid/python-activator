@@ -1,0 +1,8 @@
+paths:  
+  /welcome:
+    post:    
+      engine: 
+        name: org.kgrid.python-activator
+        package: python_multiartifact_v1_0
+        module: main
+        function: generate_page
