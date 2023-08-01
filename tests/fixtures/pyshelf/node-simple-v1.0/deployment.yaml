@@ -1,8 +1,0 @@
-/welcome:
-  post:
-    artifact:
-      - src/welcome.js
-    engine: node
-    entry: src/welcome.js
-    function: welcome
-    checksum: A8ljjDPa75fmDgRdSOciynuoKEU=

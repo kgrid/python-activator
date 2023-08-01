@@ -1,0 +1,14 @@
+[
+  { 
+      "@id": "python/simple/v1.0",
+      "url": "python-simple-v1-0.zip"
+  },
+  { 
+      "@id": "python/multiartifact/v1.0",
+      "url": "python-multiartifact-v1-0.zip"
+  },
+  { 
+      "@id": "python/multimime/v1.0",
+      "url": "python-multimime-v1-0.zip"
+  }
+]

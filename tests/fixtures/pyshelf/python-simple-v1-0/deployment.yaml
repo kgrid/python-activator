@@ -1,0 +1,18 @@
+paths:
+  /welcome:
+    post:    
+      engine: 
+        name: org.kgrid.python-activator
+        package: python_simple_v1_0
+        module: welcome
+        function: welcome
+      
+
+  # /hello:
+  #   post:    
+  #     engine: 
+  #       name: org.kgrid.python-activator
+  #       package: python_simple_v1_0
+  #       module: hello
+  #       function: hello
+

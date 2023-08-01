@@ -1,5 +1,5 @@
 [
-    {
+  {
     "@id": "python/multiartifact/v1.0",
     "@type": "koio:KnowledgeObject",
     "title": "Python Multiartifact KO example",
@@ -17,7 +17,7 @@
     "@context": [
       "http://kgrid.org/koio/contexts/knowledgeobject.jsonld"
     ],
-    "local_url": "pythonmultiartifactv10"
+    "local_url": "python-multiartifact-v1-0"
   },
   {
     "@id": "python/multimime/v1.0",
@@ -37,7 +37,7 @@
     "@context": [
       "http://kgrid.org/koio/contexts/knowledgeobject.jsonld"
     ],
-    "local_url": "pythonmultimimev10"
+    "local_url": "python-multimime-v1-0"
   },
   {
     "@id": "python/simple/v1.0",
@@ -57,6 +57,6 @@
     "@context": [
       "http://kgrid.org/koio/contexts/knowledgeobject.jsonld"
     ],
-    "local_url": "pythonsimplev10"
+    "local_url": "python-simple-v1-0"
   }
 ]

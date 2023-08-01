@@ -1,0 +1,17 @@
+paths:  
+  /welcome:
+    post:    
+      engine: 
+        name: org.kgrid.python-activator
+        package: python_multimime_v1_0
+        module: welcome
+        function: welcome
+      
+
+  /welcome-plain:
+    post:    
+      engine: 
+        name: org.kgrid.python-activator
+        package: python_multimime_v1_0
+        module: welcome
+        function: welcome    
