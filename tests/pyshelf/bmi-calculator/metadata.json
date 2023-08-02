@@ -1,0 +1,14 @@
+{
+  "@id" : "bmi/calculator/v1.0",
+  "@type" : "koio:KnowledgeObject",
+  "title" : "BMI calculator",
+  "identifier" : "ark:/bmi/calculator/v1.0",
+  "version" : "v1.0",
+  "description" : "A knowledge object to calculate BMI and categories",
+  "contributors" : "Kgrid Team",
+  "keywords" : [ "BMI", "calculator" ],
+  "hasServiceSpecification" : "service.yaml",
+  "hasDeploymentSpecification" : "deployment.yaml",
+  "hasPayload" : "src/bmi_calculator/bmi.py",
+  "@context" : [ "http://kgrid.org/koio/contexts/knowledgeobject.jsonld" ]
+}

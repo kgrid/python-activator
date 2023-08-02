@@ -10,5 +10,9 @@
   { 
       "@id": "python/multimime/v1.0",
       "url": "python-multimime-v1-0.zip"
+  },
+  { 
+      "@id": "bmi/calculator/v1.0",
+      "url": "bmi-calculator.zip"
   }
 ]

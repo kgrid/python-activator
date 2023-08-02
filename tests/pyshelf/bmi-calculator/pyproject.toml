@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "bmi-calculator"
+version = "0.1.0"
+description = "bmi calculator"
+authors = ["kgrid developers <kgrid-developers@umich.edu>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+[tool.poetry.group.dev.dependencies]
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

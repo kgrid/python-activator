@@ -19,15 +19,12 @@ class ManifestItem:
 
 
 class Manifest:
-    Knowledge_Objects = {}
     ko_list = []
 
     def __init__(self):
         global object_directory
         object_directory = set_object_directory()
 
-    def get_objects(self):
-        return self.Knowledge_Objects.values()
 
     @staticmethod
     def generate_manifest_from_directory(directory: str):
@@ -51,6 +48,8 @@ class Manifest:
 
     def load_from_manifest(self) -> list[ManifestItem]:
         manifest_path = os.environ.get("MANIFEST_PATH")
+        if not manifest_path:
+            return
         resource = open_resource(manifest_path, "")
         input_manifest = json.loads(resource.read())  # load manifest
 
@@ -70,15 +69,19 @@ class Manifest:
         return self.ko_list
 
     def install_loaded_objects(self):
+        Knowledge_Objects={}
+        Routing_Dictionary={}
         resource = open_resource(
             Path(object_directory).joinpath("local_manifest.json"), ""
         )
         local_manifest = json.loads(resource.read())  # load manifest
         for manifest_item in local_manifest:
             ko = Knowledge_Object(manifest_item["local_url"])
-            ko.install()
-            self.Knowledge_Objects[manifest_item["@id"]] = ko
-        return self.Knowledge_Objects
+            routes=ko.install()
+            for route in routes:
+                Routing_Dictionary[manifest_item["@id"]+route]=Route(manifest_item["@id"],route)
+            Knowledge_Objects[manifest_item["@id"]] = ko
+        return Knowledge_Objects,Routing_Dictionary
 
     def uninstall_objects(self):
         resource = open_resource(
@@ -97,7 +100,7 @@ class Manifest:
 class Knowledge_Object:
     deployment_data = None
     metadata = None
-    function = None
+    function = {}
     local_url = ""
     status = ""
     url = ""
@@ -113,6 +116,8 @@ class Knowledge_Object:
         ) as file:
             self.metadata = json.load(file)
         self.local_url = local_url
+        self.function = {}
+        self.status = ""
 
     def install(self):
         routes = self.deployment_data["paths"].keys()
@@ -133,14 +138,24 @@ class Knowledge_Object:
                 package_module = importlib.import_module(package + "." + module)
 
                 # Get the specific function from the module
-                self.function = getattr(package_module, function)
+                self.function[route] = getattr(package_module, function)
 
             self.status = "installed"
+            return routes
         except Exception as e:
             self.status = "not installed" + repr(e)
 
-    async def execute(self, body):
+        
+    async def execute(self, body, route):
         try:
-            return self.function(body)
+            if route=="" and len(self.function)==1:
+                return self.function[list(self.function.keys())[0]](body)
+            else:
+                return self.function[route](body)
         except Exception as e:
-            raise HTTPException(status_code=422, detail={"status": repr(e)})
+            raise HTTPException(status_code=422, detail={"status": repr(e),"available routes": list(self.function.keys())})
+
+class Route:
+    def __init__(self,id,route):
+        self.id=id
+        self.route=route

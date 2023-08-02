@@ -10,8 +10,7 @@ from urllib import parse
 def load_package(object_directory, manifest_item):
     manifest_path = os.environ.get("MANIFEST_PATH")
     scanned_directories = [f.name for f in os.scandir(object_directory) if f.is_dir()]
-
-    if os.path.isfile(manifest_item):
+    if os.path.isfile(parse.urljoin(manifest_path, manifest_item)):
         ko_name = os.path.splitext(os.path.basename(manifest_item))[0]
     else:
         ko_name = os.path.basename(manifest_item)
