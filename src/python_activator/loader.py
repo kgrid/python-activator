@@ -5,15 +5,18 @@ import os
 from io import BytesIO
 from pathlib import Path
 from urllib import parse
+import json
 
+class ManifestItem:
+    def __init__(self, id: str, directory: str, status: str):
+        self.id = id
+        self.directory = directory
+        self.status = status
 
 def load_package(object_directory, manifest_item):
     manifest_path = os.environ.get("MANIFEST_PATH")
     scanned_directories = [f.name for f in os.scandir(object_directory) if f.is_dir()]
-    if os.path.isfile(parse.urljoin(manifest_path, manifest_item)):
-        ko_name = os.path.splitext(os.path.basename(manifest_item))[0]
-    else:
-        ko_name = os.path.basename(manifest_item)
+    ko_name=get_ko_name(manifest_path,manifest_item)
 
     # 1. if knowledge object already in the collection directory continue to the next ko in list
     if ko_name in scanned_directories:
@@ -26,7 +29,7 @@ def load_package(object_directory, manifest_item):
             zfile.extractall(object_directory)
 
 
-def resolve_path(path, relative):
+def resolve_path(path, relative) -> str:
     uri = path
     if os.path.isabs(path):  # if a local path create the URI
         uri = pathlib.Path(path).as_uri()  # adds file:// if local path
@@ -51,10 +54,59 @@ def create_directory_if_not_exists(path):
             print(f"Error creating directory '{path}': {e}")
 
 
-def set_object_directory():
+def set_object_directory() -> str:
     if os.environ.get("COLLECTION_PATH"):
         object_directory = os.path.join(Path(os.environ["COLLECTION_PATH"]), "")
     else:
         object_directory = os.path.join(Path(os.getcwd()).joinpath("pyshelf"), "")
     create_directory_if_not_exists(object_directory)
     return object_directory
+
+def get_ko_name(manifest_path,manifest_item)-> str:
+    if os.path.isfile(parse.urljoin(manifest_path, manifest_item)):
+        ko_name = os.path.splitext(os.path.basename(manifest_item))[0]
+    else:
+        ko_name = os.path.basename(manifest_item)
+    return ko_name
+        
+def generate_manifest_from_directory(directory: str):
+        manifest = []
+        scanned_directories = [f.name for f in os.scandir(directory) if f.is_dir()]
+        for sub_dir in scanned_directories:
+            try:
+                with open(
+                    Path(directory).joinpath(sub_dir, "metadata.json"), "r"
+                ) as file:
+                    metadata = json.load(file)
+            except:
+                continue
+
+            metadata["local_url"] = sub_dir
+            manifest.append(metadata)
+
+        with open(Path(directory).joinpath("local_manifest.json"), "w") as json_file:
+            json.dump(manifest, json_file, indent=2)
+
+def generate_manifest_from_loaded_list(directory: str, ko_list:list[ManifestItem]):
+        manifest_path = os.environ.get("MANIFEST_PATH")        
+            
+        manifest = []
+        scanned_directories = [f.name for f in os.scandir(directory) if f.is_dir()]
+        for ko in ko_list:
+            ko_name=get_ko_name(manifest_path,ko.directory)           
+            metadata={}
+            if ko_name in scanned_directories:                    
+                try:
+                    with open(
+                        Path(directory).joinpath(ko_name, "metadata.json"), "r"
+                    ) as file:
+                        metadata = json.load(file)
+                except:
+                    pass
+            metadata["@id"]=ko.id            
+            metadata["local_url"] = ko_name
+            metadata["status"] = ko.status
+            manifest.append(metadata)
+
+        with open(Path(directory).joinpath("local_manifest.json"), "w") as json_file:
+            json.dump(manifest, json_file, indent=2)   

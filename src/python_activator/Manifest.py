@@ -1,52 +1,23 @@
 import os
 import subprocess
 from fastapi import HTTPException
-from python_activator.loader import set_object_directory, load_package, open_resource
+from python_activator.loader import *
 import json
 from pathlib import Path
 import yaml
-import json
 import importlib
-
 object_directory = ""
 
 
-class ManifestItem:
-    def __init__(self, id: str, directory: str, status: str):
-        self.id = id
-        self.directory = directory
-        self.status = status
 
-
-class Manifest:
-    ko_list = []
-
+class Manifest:    
     def __init__(self):
         global object_directory
         object_directory = set_object_directory()
 
 
-    @staticmethod
-    def generate_manifest_from_directory(directory: str):
-        manifest = []
-        scanned_directories = [f.name for f in os.scandir(directory) if f.is_dir()]
-        for sub_dir in scanned_directories:
-            try:
-                with open(
-                    Path(directory).joinpath(sub_dir, "metadata.json"), "r"
-                ) as file:
-                    metadata = json.load(file)
-            except:
-                continue
-
-            metadata["local_url"] = sub_dir
-            manifest.append(metadata)
-        # create a manifest
-        print(manifest)
-        with open(Path(directory).joinpath("local_manifest.json"), "w") as json_file:
-            json.dump(manifest, json_file, indent=2)
-
-    def load_from_manifest(self) -> list[ManifestItem]:
+    def load_from_manifest(self) :
+        ko_list = []
         manifest_path = os.environ.get("MANIFEST_PATH")
         if not manifest_path:
             return
@@ -55,7 +26,7 @@ class Manifest:
 
         # for each item in the manifest
         for manifest_item in input_manifest:
-            ko = ManifestItem(manifest_item["@id"], manifest_item["url"], "")
+            ko = ManifestItem(manifest_item["@id"],manifest_item["url"], "")
             try:
                 load_package(object_directory, manifest_item["url"])
             except TypeError as e:
@@ -64,9 +35,9 @@ class Manifest:
                 ko.status = "Error unziping: " + repr(e)
             else:
                 ko.status = "Ready for install"
-            self.ko_list.append(ko)
-        self.generate_manifest_from_directory(object_directory)
-        return self.ko_list
+            ko_list.append(ko)
+        generate_manifest_from_loaded_list(object_directory,ko_list)
+        return ko_list
 
     def install_loaded_objects(self):
         Knowledge_Objects={}
@@ -76,10 +47,11 @@ class Manifest:
         )
         local_manifest = json.loads(resource.read())  # load manifest
         for manifest_item in local_manifest:
-            ko = Knowledge_Object(manifest_item["local_url"])
-            routes=ko.install()
-            for route in routes:
-                Routing_Dictionary[manifest_item["@id"]+route]=Route(manifest_item["@id"],route)
+            ko = Knowledge_Object(manifest_item["local_url"],manifest_item["status"])
+            if manifest_item["status"]=="Ready for install":
+                routes=ko.install()
+                for route in routes:
+                    Routing_Dictionary[manifest_item["@id"]+route]=Route(manifest_item["@id"],route)
             Knowledge_Objects[manifest_item["@id"]] = ko
         return Knowledge_Objects,Routing_Dictionary
 
@@ -105,21 +77,27 @@ class Knowledge_Object:
     status = ""
     url = ""
 
-    def __init__(self, local_url):
+    def __init__(self, local_url,status):
+        self.status = status
+        
         object_directory = set_object_directory()
-        with open(
-            Path(object_directory).joinpath(local_url, "deployment.yaml"), "r"
-        ) as file:
-            self.deployment_data = yaml.safe_load(file)
-        with open(
-            Path(object_directory).joinpath(local_url, "metadata.json"), "r"
-        ) as file:
-            self.metadata = json.load(file)
+        try:
+            with open(
+                Path(object_directory).joinpath(local_url, "deployment.yaml"), "r"
+            ) as file:
+                self.deployment_data = yaml.safe_load(file)
+            with open(
+                Path(object_directory).joinpath(local_url, "metadata.json"), "r"
+            ) as file:
+                self.metadata = json.load(file)
+        except:
+            pass        
         self.local_url = local_url
         self.function = {}
-        self.status = ""
+        
 
     def install(self):
+        
         routes = self.deployment_data["paths"].keys()
         try:
             subprocess.run(

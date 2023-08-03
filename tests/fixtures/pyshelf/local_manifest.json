@@ -1,23 +1,24 @@
 [
   {
-    "@id": "bmi/calculator/v1.0",
+    "@id": "python/simple/v1.0",
     "@type": "koio:KnowledgeObject",
-    "title": "BMI calculator",
-    "identifier": "ark:/bmi/calculator/v1.0",
+    "title": "Simple Python KO example",
+    "identifier": "ark:/python/simple/v1.0",
     "version": "v1.0",
-    "description": "A knowledge object to calculate BMI and categories",
+    "description": "A python object with a simple artifact",
     "contributors": "Kgrid Team",
     "keywords": [
-      "BMI",
-      "calculator"
+      "Hello",
+      "example"
     ],
     "hasServiceSpecification": "service.yaml",
     "hasDeploymentSpecification": "deployment.yaml",
-    "hasPayload": "src/bmi_calculator/bmi.py",
+    "hasPayload": "src/welcome.py",
     "@context": [
       "http://kgrid.org/koio/contexts/knowledgeobject.jsonld"
     ],
-    "local_url": "bmi-calculator"
+    "local_url": "python-simple-v1-0",
+    "status": "Ready for install"
   },
   {
     "@id": "python/multiartifact/v1.0",
@@ -37,7 +38,8 @@
     "@context": [
       "http://kgrid.org/koio/contexts/knowledgeobject.jsonld"
     ],
-    "local_url": "python-multiartifact-v1-0"
+    "local_url": "python-multiartifact-v1-0",
+    "status": "Ready for install"
   },
   {
     "@id": "python/multimime/v1.0",
@@ -57,26 +59,33 @@
     "@context": [
       "http://kgrid.org/koio/contexts/knowledgeobject.jsonld"
     ],
-    "local_url": "python-multimime-v1-0"
+    "local_url": "python-multimime-v1-0",
+    "status": "Ready for install"
   },
   {
-    "@id": "python/simple/v1.0",
+    "@id": "bmi/calculator/v1.0",
     "@type": "koio:KnowledgeObject",
-    "title": "Simple Python KO example",
-    "identifier": "ark:/python/simple/v1.0",
+    "title": "BMI calculator",
+    "identifier": "ark:/bmi/calculator/v1.0",
     "version": "v1.0",
-    "description": "A python object with a simple artifact",
+    "description": "A knowledge object to calculate BMI and categories",
     "contributors": "Kgrid Team",
     "keywords": [
-      "Hello",
-      "example"
+      "BMI",
+      "calculator"
     ],
     "hasServiceSpecification": "service.yaml",
     "hasDeploymentSpecification": "deployment.yaml",
-    "hasPayload": "src/welcome.py",
+    "hasPayload": "src/bmi_calculator/bmi.py",
     "@context": [
       "http://kgrid.org/koio/contexts/knowledgeobject.jsonld"
     ],
-    "local_url": "python-simple-v1-0"
+    "local_url": "bmi-calculator",
+    "status": "Ready for install"
+  },
+  {
+    "@id": "nonExistent",
+    "local_url": "nonExistent.zip",
+    "status": "Error unziping: FileNotFoundError('Could not find resource file.')"
   }
 ]

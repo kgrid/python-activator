@@ -15,4 +15,9 @@
       "@id": "bmi/calculator/v1.0",
       "url": "bmi-calculator.zip"
   }
+  ,
+  { 
+      "@id": "nonExistent",
+      "url": "nonExistent.zip"
+  }
 ]

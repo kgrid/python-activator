@@ -83,7 +83,7 @@ def route_endpoint(endpoint_path):
         return endpoint_key,endpoint_route
     
         
-# run install if the app is starated using poetry run uvicorn python_activator.api:app --reload
+# run install if the app is starated using a web server like "poetry run uvicorn python_activator.api:app --reload"
 @app.on_event("startup")
 async def startup_event():
     print(">>>>>> running startup event")
@@ -96,7 +96,7 @@ async def startup_event():
 # run virtual server when running this .py file directly for debugging. It will look for objects at {code folder}/pyshelf
 if __name__ == "__main__":
     print(">>>>>running with debug<<<<<")
-    #os.environ["MANIFEST_PATH"] = "/home/faridsei/dev/code/python-activator/tests/fixtures/installfiles/manifest.json"
+    os.environ["MANIFEST_PATH"] = "/home/faridsei/dev/code/python-activator/tests/fixtures/installfiles/manifest.json"
     # os.environ["MANIFEST_PATH"] = "https://github.com/kgrid-objects/example-collection/releases/download/4.2.1/manifest.json"
     os.environ["COLLECTION_PATH"] = "/home/faridsei/dev/test/pyshelf/"
     uvicorn.run(app, host="127.0.0.1", port=8001)
