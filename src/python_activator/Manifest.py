@@ -50,8 +50,9 @@ class Manifest:
             ko = Knowledge_Object(manifest_item["local_url"],manifest_item["status"])
             if manifest_item["status"]=="Ready for install":
                 routes=ko.install()
-                for route in routes:
-                    Routing_Dictionary[manifest_item["@id"]+route]=Route(manifest_item["@id"],route)
+                if routes:
+                    for route in routes:
+                        Routing_Dictionary[manifest_item["@id"]+route]=Route(manifest_item["@id"],route)
             Knowledge_Objects[manifest_item["@id"]] = ko
         return Knowledge_Objects,Routing_Dictionary
 
@@ -98,8 +99,9 @@ class Knowledge_Object:
 
     def install(self):
         
-        routes = self.deployment_data["paths"].keys()
+        
         try:
+            routes = self.deployment_data["paths"].keys()
             subprocess.run(
                 ["pip", "install", Path(object_directory).joinpath(self.local_url)],
                 check=True,

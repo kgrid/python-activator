@@ -41,13 +41,12 @@ async def endpoint_detail(endpoint_key: str):
 async def execute_endpoint(
     endpoint_path: str,
     body: Any = Body(...),
-    content_type: str = Header(default="application/json"),
 ):
     try:
         endpoint_key,endpoint_route=route_endpoint(endpoint_path)            
             
         result = await Knowledge_Objects[endpoint_key].execute(body,endpoint_route)
-        return result
+        return {"result": result, "info": {"ko": Knowledge_Objects[endpoint_key].metadata, "inputs": body }}
     except KeyError as e:
         raise HTTPException(
             status_code=404, detail=({"endpoint_path": endpoint_path})
@@ -96,7 +95,7 @@ async def startup_event():
 # run virtual server when running this .py file directly for debugging. It will look for objects at {code folder}/pyshelf
 if __name__ == "__main__":
     print(">>>>>running with debug<<<<<")
-    os.environ["MANIFEST_PATH"] = "/home/faridsei/dev/code/python-activator/tests/fixtures/installfiles/manifest.json"
+    #os.environ["MANIFEST_PATH"] = "/home/faridsei/dev/code/python-activator/tests/fixtures/installfiles/manifest.json"
     # os.environ["MANIFEST_PATH"] = "https://github.com/kgrid-objects/example-collection/releases/download/4.2.1/manifest.json"
     os.environ["COLLECTION_PATH"] = "/home/faridsei/dev/test/pyshelf/"
     uvicorn.run(app, host="127.0.0.1", port=8001)
