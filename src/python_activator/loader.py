@@ -56,7 +56,7 @@ def create_directory_if_not_exists(path):
 
 def set_object_directory() -> str:
     if os.environ.get("COLLECTION_PATH"):
-        object_directory = os.path.join(Path(os.environ["COLLECTION_PATH"]), "")
+        object_directory = os.path.abspath(os.path.join(Path(os.environ["COLLECTION_PATH"]), ""))
     else:
         object_directory = os.path.join(Path(os.getcwd()).joinpath("pyshelf"), "")
     create_directory_if_not_exists(object_directory)
@@ -73,15 +73,18 @@ def generate_manifest_from_directory(directory: str):
         manifest = []
         scanned_directories = [f.name for f in os.scandir(directory) if f.is_dir()]
         for sub_dir in scanned_directories:
+            metadata={}
             try:
                 with open(
                     Path(directory).joinpath(sub_dir, "metadata.json"), "r"
                 ) as file:
                     metadata = json.load(file)
-            except:
-                continue
-
-            metadata["local_url"] = sub_dir
+                metadata["status"]="Ready for install"     
+            except Exception as e:
+                metadata["status"]= repr(e)
+                metadata["@id"]= sub_dir  
+            
+            metadata["local_url"] = sub_dir             
             manifest.append(metadata)
 
         with open(Path(directory).joinpath("local_manifest.json"), "w") as json_file:
