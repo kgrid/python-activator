@@ -66,8 +66,8 @@ def finalize():
         print(
             "{:<4}. {:<30} {:<30} {:<30}".format(
                 str(i),
-                Knowledge_Objects[item].id,
-                Knowledge_Objects[item].name[:30],
+                item,
+                Knowledge_Objects[item].local_url[:30],
                 Knowledge_Objects[item].status[:50],
             )
         )
@@ -90,12 +90,12 @@ async def startup_event():
     manifest.load_from_manifest()
     global Knowledge_Objects, Routing_Dictionary
     Knowledge_Objects,Routing_Dictionary = manifest.install_loaded_objects()
-
+    finalize()
 
 # run virtual server when running this .py file directly for debugging. It will look for objects at {code folder}/pyshelf
 if __name__ == "__main__":
     print(">>>>>running with debug<<<<<")
     #os.environ["MANIFEST_PATH"] = "/home/faridsei/dev/code/python-activator/tests/fixtures/installfiles/manifest.json"
     # os.environ["MANIFEST_PATH"] = "https://github.com/kgrid-objects/example-collection/releases/download/4.2.1/manifest.json"
-    os.environ["COLLECTION_PATH"] = "/home/faridsei/dev/test/pyshelf/"
+    os.environ["COLLECTION_PATH"] = "fixtures/pyshelf/"
     uvicorn.run(app, host="127.0.0.1", port=8001)

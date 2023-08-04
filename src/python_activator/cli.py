@@ -4,6 +4,7 @@ from python_activator.Manifest import Manifest
 from python_activator.loader import generate_manifest_from_directory
 import typer
 from python_activator.api import *
+from pathlib import Path
 
 cli = typer.Typer()
 
@@ -28,12 +29,10 @@ def no_command(
 @cli.command()
 def run(collection_path: str = "", manifest_path: str = ""):
     """Loads and installs knowledge objects and runs APIs."""
-    object_directory = set_object_directory(collection_path)
-    print("object directory is " + object_directory)
+    set_collection_path(collection_path)
     if manifest_path:
         os.environ["MANIFEST_PATH"] = manifest_path
-    if object_directory:
-        os.environ["COLLECTION_PATH"] = object_directory
+
 
     uvicorn.run(app, host="127.0.0.1", port=8000)
 
@@ -47,11 +46,10 @@ def create_manifest(collection_path: str = ""):
 @cli.command()
 def load_from_manifest(collection_path: str = "", manifest_path: str = ""):
     """Loads KOs from a manifest and creates a local one."""
-    object_directory = set_object_directory(collection_path)
+    set_collection_path(collection_path)
     if manifest_path:
         os.environ["MANIFEST_PATH"] = manifest_path
-    if object_directory:
-        os.environ["COLLECTION_PATH"] = object_directory
+
     manifest = Manifest()
     manifest.load_from_manifest()
 
@@ -59,9 +57,8 @@ def load_from_manifest(collection_path: str = "", manifest_path: str = ""):
 @cli.command()
 def install_loaded_kos(collection_path: str = ""):
     """Installs KOs from a local manifest in a collection."""
-    object_directory = set_object_directory(collection_path)
-    if object_directory:
-        os.environ["COLLECTION_PATH"] = object_directory
+    set_collection_path(collection_path)
+
     manifest = Manifest()
     manifest.install_loaded_objects()
 
@@ -70,32 +67,19 @@ def install_loaded_kos(collection_path: str = ""):
 def uninstall_kos(collection_path: str = ""):
     """Uninstalls KOs from a local manifest in a coolection."""
     try:
-        object_directory = set_object_directory(collection_path)
-        if object_directory:
-            os.environ["COLLECTION_PATH"] = object_directory
+        set_collection_path(collection_path)
+
         manifest = Manifest()
         manifest.uninstall_objects()
     except:
         pass
 
 
-def set_object_directory(collection_path: str) -> str:
-    object_directory = ""
-    if (
-        collection_path
-    ):  
-        object_directory = collection_path
-        print(">>>>>running with input param<<<<<")
-    elif os.environ.get(
-        "COLLECTION_PATH"
-    ): 
-        print(">>>>>running with environment variable<<<<<")
-        object_directory = os.environ.get("COLLECTION_PATH")
-        del os.environ["COLLECTION_PATH"]
-    else:  
-        print(">>>>>running with default path (./pyshelf/)<<<<<")
-
-    return object_directory
+def set_collection_path(collection_path: str) -> str:    
+    if (collection_path):  
+        os.environ["COLLECTION_PATH"] = collection_path
+        
+    
 
 
 if __name__ == "__main__":

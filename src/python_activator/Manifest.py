@@ -64,12 +64,6 @@ class Manifest:
         for manifest_item in local_manifest:
             subprocess.run(["pip", "uninstall", manifest_item["local_url"]], check=True)
 
-    def set_object_directory(self, dir):
-        global object_directory
-        object_directory = dir
-        os.environ["COLLECTION_PATH"] = dir
-
-
 class Knowledge_Object:
     deployment_data = None
     metadata = None
@@ -81,7 +75,6 @@ class Knowledge_Object:
     def __init__(self, local_url,status):
         self.status = status
         
-        object_directory = set_object_directory()
         try:
             with open(
                 Path(object_directory).joinpath(local_url, "deployment.yaml"), "r"
