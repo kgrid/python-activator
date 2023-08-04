@@ -134,7 +134,7 @@ pip install https://github.com/kgrid/python-activator.git  # from source --force
 ```bash
 pip install path/to/src/python-activator/dist/python_activator-0.1.0-py3-none-any.whl
 ```
- 
+  
 
 
 ## Notes
