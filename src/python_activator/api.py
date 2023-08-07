@@ -3,11 +3,12 @@ from typing import Any
 import uvicorn
 from fastapi import FastAPI, Header, HTTPException, Request, Body
 from python_activator.Manifest import Manifest
+from pathlib import Path
 
 app = FastAPI()
 Knowledge_Objects = {}
 Routing_Dictionary={}
-
+object_directory=""
 @app.get(
     "/",
     include_in_schema=False,
@@ -49,11 +50,13 @@ async def execute_endpoint(
         return {"result": result, "info": {"ko": Knowledge_Objects[endpoint_key].metadata, "inputs": body }}
     except KeyError as e:
         raise HTTPException(
-            status_code=404, detail=({"endpoint_path": endpoint_path})
+            status_code=404, detail=({"endpoint_path": endpoint_path, "more info":str(Path(object_directory).joinpath(Knowledge_Objects[endpoint_key].local_url).joinpath("service.yaml"))})
         )
 
 
 def finalize():
+    global object_directory
+    object_directory=os.environ["COLLECTION_PATH"]
     try:
         del os.environ["COLLECTION_PATH"]
         del os.environ["MANIFEST_PATH"]
@@ -97,5 +100,5 @@ if __name__ == "__main__":
     print(">>>>>running with debug<<<<<")
     #os.environ["MANIFEST_PATH"] = "/home/faridsei/dev/code/python-activator/tests/fixtures/installfiles/manifest.json"
     # os.environ["MANIFEST_PATH"] = "https://github.com/kgrid-objects/example-collection/releases/download/4.2.1/manifest.json"
-    os.environ["COLLECTION_PATH"] = "fixtures/pyshelf/"
-    uvicorn.run(app, host="127.0.0.1", port=8001)
+    os.environ["COLLECTION_PATH"] = "/home/faridsei/dev/test/pyshelf"
+    uvicorn.run(app, host="127.0.0.1", port=8000)
