@@ -120,14 +120,11 @@ class Knowledge_Object:
 
         
     async def execute(self, body, route):
-        try:
-            if route=="" and len(self.function)==1:
-                return self.function[list(self.function.keys())[0]](body)
-            else:
-                return self.function[route](body)
-        except Exception as e:
-            raise HTTPException(status_code=422, detail={"status": repr(e),"available routes": list(self.function.keys())})
-
+        if route=="" and len(self.function)==1:
+            return self.function[list(self.function.keys())[0]](body)
+        else:
+            return self.function[route](body)
+        
 class Route:
     def __init__(self,id,route):
         self.id=id
