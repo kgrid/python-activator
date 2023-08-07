@@ -41,7 +41,7 @@ def open_resource(base, relative):
     try:
         resource = urllib.request.urlopen(resolved)
     except:
-        raise FileNotFoundError("Could not find resource file.")
+        raise FileNotFoundError("Could not find resource file at "+ resolved)
 
     return resource
 
