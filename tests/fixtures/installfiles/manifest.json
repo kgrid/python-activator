@@ -17,6 +17,11 @@
   }
   ,
   { 
+      "@id": "calorie/calculator/v1.0",
+      "url": "calorie-calculator.zip"
+  }
+  ,
+  { 
       "@id": "nonExistent",
       "url": "nonExistent.zip"
   }
