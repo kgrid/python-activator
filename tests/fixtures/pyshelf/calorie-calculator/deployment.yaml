@@ -1,0 +1,11 @@
+paths:
+  /calculate_calories:
+    post:    
+      engine: 
+        name: org.kgrid.python-activator
+        package: calorie_calculator
+        module: daily_calorie
+        function: calculate_daily_calorie_needs
+      
+
+

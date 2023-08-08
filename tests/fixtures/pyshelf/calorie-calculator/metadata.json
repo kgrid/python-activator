@@ -1,0 +1,14 @@
+{
+  "@id" : "calories/calculator/v1.0",
+  "@type" : "koio:KnowledgeObject",
+  "title" : "Daily Calorie Needs Calculator API",
+  "identifier" : "ark:/calories/calculator/v1.0",
+  "version" : "v1.0",
+  "description" : "A python object that calculates daily calories needed",
+  "contributors" : "Kgrid Team",
+  "keywords" : [ "Daily", "Calorie", "Need" ],
+  "hasServiceSpecification" : "service.yaml",
+  "hasDeploymentSpecification" : "deployment.yaml",
+  "hasPayload" : "calorie_calculator/daily_calorie.py",
+  "@context" : [ "http://kgrid.org/koio/contexts/knowledgeobject.jsonld" ]
+}
