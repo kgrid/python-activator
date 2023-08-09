@@ -1,13 +1,22 @@
 import os
 import subprocess
+import sys
 from fastapi import HTTPException
 from python_activator.loader import *
 import json
 from pathlib import Path
 import yaml
 import importlib
+import logging
+
 object_directory = ""
 
+logger = logging.getLogger("Manifest")
+# Create a log handler that sends messages to stderr
+stderr_handler = logging.StreamHandler(sys.stderr)
+
+# Configure logging to use the stderr handler
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(name)s - %(funcName)s - %(message)s', handlers=[stderr_handler])
 
 
 class Manifest:    
@@ -17,6 +26,8 @@ class Manifest:
 
 
     def load_from_manifest(self) :
+        logging.info("Loading from manifest")
+
         ko_list = []
         manifest_path = os.environ.get("MANIFEST_PATH")
         if not manifest_path:
@@ -36,10 +47,13 @@ class Manifest:
             else:
                 ko.status = "Ready for install"
             ko_list.append(ko)
+            
+            logging.info("ko "+ko.id + " - status "+ko.status)
         generate_manifest_from_loaded_list(object_directory,ko_list)
         return ko_list
 
     def install_loaded_objects(self):
+        logging.info("Installing loaded objects")
         Knowledge_Objects={}
         Routing_Dictionary={}
         resource = open_resource(
@@ -54,15 +68,22 @@ class Manifest:
                     for route in routes:
                         Routing_Dictionary[manifest_item["@id"]+route]=Route(manifest_item["@id"],route)
             Knowledge_Objects[manifest_item["@id"]] = ko
+            logging.info("ko "+manifest_item["@id"] + " - status "+ko.status)
+
         return Knowledge_Objects,Routing_Dictionary
 
     def uninstall_objects(self):
+        logging.info("Uninstalling objects")
         resource = open_resource(
             Path(object_directory).joinpath("local_manifest.json"), ""
         )
         local_manifest = json.loads(resource.read())  # load manifest
         for manifest_item in local_manifest:
-            subprocess.run(["pip", "uninstall", manifest_item["local_url"]], check=True)
+            try:
+                subprocess.run(["pip", "uninstall", manifest_item["local_url"]], check=True)
+                logging.info("ko "+manifest_item["@id"] + " - status uninstalled")
+            except Exception as e:
+                logging.info("ko "+manifest_item["@id"] + " - status error uninstalling "+ repr(e))
 
 class Knowledge_Object:
     deployment_data = None

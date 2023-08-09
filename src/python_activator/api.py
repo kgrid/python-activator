@@ -1,14 +1,30 @@
 import os
 from typing import Any
 import uvicorn
-from fastapi import FastAPI, Header, HTTPException, Request, Body
+from fastapi import FastAPI, Header, HTTPException, Request,Response, Body
 from python_activator.Manifest import Manifest
 from pathlib import Path
+import logging
 
 app = FastAPI()
 Knowledge_Objects = {}
 Routing_Dictionary={}
 object_directory=""
+
+async def custom_middleware(request: Request, call_next):
+    endpoint_path = request.url.path
+    if endpoint_path.startswith("/endpoints/") and request.method == "POST":
+        logging.info(f"Request to endpoint {endpoint_path}")
+        
+        response = await call_next(request)
+        
+        logging.info(f"Response to endpoint {endpoint_path}: {response.status_code}")
+    else:
+        response = await call_next(request)
+        
+    return response
+app.middleware("http")(custom_middleware)
+
 @app.get(
     "/",
     include_in_schema=False,
