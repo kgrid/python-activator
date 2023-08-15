@@ -11,4 +11,4 @@ if __name__ == "__main__":
         os.getcwd() + "/tests/fixtures/installfiles/manifest.json"
     )
     os.environ["COLLECTION_PATH"] = os.getcwd() + "/pyshelf"
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app)

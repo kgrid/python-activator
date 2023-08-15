@@ -1,14 +1,21 @@
+import importlib
+import json
+import logging
 import os
 import subprocess
 import sys
-from urllib.parse import urlparse
-from fastapi import HTTPException
-from python_activator.loader import *
-import json
 from pathlib import Path
+from urllib.parse import urlparse
+
 import yaml
-import importlib
-import logging
+
+from python_activator.loader import (
+    ManifestItem,
+    generate_manifest_from_loaded_list,
+    load_package,
+    open_resource,
+    set_object_directory,
+)
 
 object_directory = ""
 
