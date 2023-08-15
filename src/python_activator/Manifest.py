@@ -1,6 +1,7 @@
 import os
 import subprocess
 import sys
+from urllib.parse import urlparse
 from fastapi import HTTPException
 from python_activator.loader import *
 import json
@@ -32,6 +33,11 @@ class Manifest:
         manifest_path = os.environ.get("MANIFEST_PATH")
         if not manifest_path:
             return
+        
+        parsed_url = urlparse(manifest_path)
+        if not parsed_url.scheme:  # If a scheme is not present, it's likely not a URL make it absolute path if not
+            manifest_path=os.path.abspath(manifest_path)
+    
         resource = open_resource(manifest_path, "")
         input_manifest = json.loads(resource.read())  # load manifest
 
