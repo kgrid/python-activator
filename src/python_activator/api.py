@@ -1,5 +1,6 @@
 import os
 from typing import Any
+from fastapi.responses import RedirectResponse
 import uvicorn
 from fastapi import FastAPI, Header, HTTPException, Request,Response, Body
 from python_activator.Manifest import Manifest
@@ -30,12 +31,9 @@ app.middleware("http")(custom_middleware)
     include_in_schema=False,
 )
 async def root(request: Request):
-    return {
-        "endpoints": request.url.__str__() + "endpoints",
-        "fastapi documentation": request.url.__str__() + "docs",
-        "execute": request.url.__str__() + "endpoints/{id}",
-    }
-
+    response = RedirectResponse(url="/docs")
+    return response
+    
 
 @app.get("/endpoints")
 def endpoints(request: Request):
