@@ -7,6 +7,7 @@ from fastapi.responses import RedirectResponse
 from fastapi import FastAPI, HTTPException, Request,Body
 
 from python_activator.Manifest import Manifest
+from python_activator.loader import set_object_directory
 
 app = FastAPI()
 Knowledge_Objects = {}
@@ -90,7 +91,7 @@ async def execute_endpoint(
 
 def finalize():
     global object_directory
-    # object_directory = os.environ["COLLECTION_PATH"]
+    object_directory = set_object_directory()
     try:
         del os.environ["COLLECTION_PATH"]
         del os.environ["MANIFEST_PATH"]
