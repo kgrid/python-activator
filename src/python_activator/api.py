@@ -96,21 +96,7 @@ def finalize():
         del os.environ["COLLECTION_PATH"]
         del os.environ["MANIFEST_PATH"]
     except Exception:
-        print("error deleting env variables")
-
-    print("-------------------\nPackages installed:")
-    print("{:<4}. {:<30} {:<30} {:<30}".format("", "ID", "NAME", "STATUS"))
-    for i, item in enumerate(Knowledge_Objects):
-        print(
-            "{:<4}. {:<30} {:<30} {:<30}".format(
-                str(i),
-                item,
-                Knowledge_Objects[item].local_url[:30],
-                Knowledge_Objects[item].status[:50],
-            )
-        )
-    print("-------------------")
-
+        pass
 
 def route_endpoint(endpoint_path):
     endpoint_key = endpoint_path
@@ -125,7 +111,7 @@ def route_endpoint(endpoint_path):
 # "poetry run uvicorn python_activator.api:app --reload"
 @app.on_event("startup")
 async def startup_event():
-    print(">>>>>> running startup event")
+    logging.info(">>>>>> running startup event")
     manifest = Manifest()
     manifest.load_from_manifest()
     global Knowledge_Objects, Routing_Dictionary

@@ -62,7 +62,7 @@ class Manifest:
                 ko.status = "Ready for install"
             ko_list.append(ko)
             
-            logging.info("ko "+ko.id + " - status "+ko.status)
+            logging.info(ko.short_representation())
         generate_manifest_from_loaded_list(object_directory,ko_list)
         return ko_list
 
@@ -82,7 +82,7 @@ class Manifest:
                     for route in routes:
                         Routing_Dictionary[manifest_item["@id"]+route]=Route(manifest_item["@id"],route)
             Knowledge_Objects[manifest_item["@id"]] = ko
-            logging.info("ko "+manifest_item["@id"] + " - status "+ko.status)
+            logging.info(ko.short_representation())
 
         return Knowledge_Objects,Routing_Dictionary
 
@@ -95,9 +95,9 @@ class Manifest:
         for manifest_item in local_manifest:
             try:
                 subprocess.run(["pip", "uninstall", manifest_item["local_url"]], check=True)
-                logging.info("ko "+manifest_item["@id"] + " - status uninstalled")
+                logging.info({'@id': manifest_item["@id"]  , 'status': 'status uninstalled'})
             except Exception as e:
-                logging.info("ko "+manifest_item["@id"] + " - status error uninstalling "+ repr(e))
+                logging.info({'@id': manifest_item["@id"] , 'status': 'error uninstalling '+ repr(e)})
 
 class Knowledge_Object:
     deployment_data = None
@@ -125,9 +125,7 @@ class Knowledge_Object:
         self.function = {}
         
 
-    def install(self):
-        
-        
+    def install(self):      
         try:
             routes = self.deployment_data["paths"].keys()
             subprocess.run(
@@ -160,6 +158,10 @@ class Knowledge_Object:
         else:
             return self.function[route](body)
         
+    def short_representation(self):        
+        return {"@id": self.metadata["@id"] if self.metadata else '',"local_url": self.local_url, "status":self.status  }    
+    
+    
 class Route:
     def __init__(self,id,route):
         self.id=id

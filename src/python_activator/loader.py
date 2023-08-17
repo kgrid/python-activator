@@ -1,3 +1,4 @@
+import sys
 import urllib.request
 import zipfile
 import pathlib
@@ -6,12 +7,23 @@ from io import BytesIO
 from pathlib import Path
 from urllib import parse
 import json
+import logging
+
+logger = logging.getLogger("Loader")
+# Create a log handler that sends messages to stderr
+stderr_handler = logging.StreamHandler(sys.stderr)
+
+# Configure logging to use the stderr handler
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(name)s - %(funcName)s - %(message)s', handlers=[stderr_handler])
+
 
 class ManifestItem:
     def __init__(self, id: str, directory: str, status: str):
         self.id = id
         self.directory = directory
         self.status = status
+    def short_representation(self):
+        return {"@id":self.id, "status":self.status}       
 
 def load_package(object_directory, manifest_item):
     manifest_path = os.environ.get("MANIFEST_PATH")
@@ -51,7 +63,7 @@ def create_directory_if_not_exists(path):
         try:
             os.makedirs(path)
         except OSError as e:
-            print(f"Error creating directory '{path}': {e}")
+            logging.error(f"Error creating directory '{path}': {e}")
 
 
 def set_object_directory() -> str:
