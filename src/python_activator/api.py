@@ -52,9 +52,20 @@ def endpoints(request: Request):
     return Knowledge_Objects
 
 
-@app.get("/endpoints/{endpoint_key:path}")
-async def endpoint_detail(endpoint_key: str):
-    return Knowledge_Objects[endpoint_key]
+@app.get("/endpoints/{endpoint_path:path}")
+async def endpoint_detail(endpoint_path: str):
+    service_path = ""
+    try:
+        endpoint_key, endpoint_route = route_endpoint(endpoint_path)
+        service_path = get_service_path(endpoint_key)
+        return Knowledge_Objects[endpoint_key]
+    except Exception as e:
+        raise HTTPException(status_code=404,detail=({
+                    "error": repr(e),
+                    "endpoint_path": endpoint_path,
+                    "more info": service_path,
+                }),
+        )
 
 
 # endpoint to expose all packages
@@ -66,29 +77,30 @@ async def execute_endpoint(
     service_path = ""
     try:
         endpoint_key, endpoint_route = route_endpoint(endpoint_path)
-        service_path = str(
-            Path(object_directory)
-            .joinpath(Knowledge_Objects[endpoint_key].local_url)
-            .joinpath("service.yaml")
-        )
+        service_path = get_service_path(endpoint_key)
+
         result = await Knowledge_Objects[endpoint_key].execute(body, endpoint_route)
         return {
             "result": result,
             "info": {"ko": Knowledge_Objects[endpoint_key].metadata, "inputs": body},
         }
     except Exception as e:
-        raise HTTPException(
-            status_code=404,
-            detail=(
-                {
+        raise HTTPException(status_code=404,detail=({
                     "error": repr(e),
                     "endpoint_path": endpoint_path,
                     "more info": service_path,
-                }
-            ),
+                }),
         )
 
 
+def get_service_path(endpoint_key):
+    return str(
+            Path(object_directory)
+            .joinpath(Knowledge_Objects[endpoint_key].local_url)
+            .joinpath("service.yaml")
+        )
+    
+    
 def finalize():
     global object_directory
     object_directory = set_object_directory()
