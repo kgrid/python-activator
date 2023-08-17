@@ -4,7 +4,7 @@ from python_activator.Manifest import Manifest
 from python_activator.loader import generate_manifest_from_directory
 import typer
 from python_activator.api import *
-from pathlib import Path
+import uvicorn 
 
 cli = typer.Typer()
 
