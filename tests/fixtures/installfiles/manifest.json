@@ -5,20 +5,20 @@
   },
   { 
       "@id": "python/multiartifact/v1.0",
-      "url": "python-multiartifact-v1-0.zip"
+      "url": "python-multiartifact-v1-01.zip"
   },
   { 
       "@id": "python/multimime/v1.0",
-      "url": "python-multimime-v1-0.zip"
+      "url": "python-multimime-v1-01.zip"
   },
   { 
       "@id": "bmi/calculator/v1.0",
-      "url": "bmi-calculator.zip"
+      "url": "bmi-calculator1.zip"
   }
   ,
   { 
       "@id": "calorie/calculator/v1.0",
-      "url": "calorie-calculator.zip"
+      "url": "calorie-calculator1.zip"
   }
   ,
   { 

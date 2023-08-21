@@ -3,16 +3,23 @@ import os
 from pathlib import Path
 from typing import Any
 
-from fastapi.responses import RedirectResponse
-from fastapi import FastAPI, HTTPException, Request,Body
+from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi import FastAPI, Request,Body
 
 from python_activator.Manifest import Manifest
 from python_activator.loader import set_object_directory
+from python_activator.exceptions import EndpointNotFoundError,InvalidInputParameterError
 
 app = FastAPI()
 Knowledge_Objects = {}
 Routing_Dictionary = {}
 object_directory = ""
+
+@app.exception_handler(EndpointNotFoundError)
+@app.exception_handler(InvalidInputParameterError)
+async def custom_exception_handler(request, exc):
+    return JSONResponse(content={"title": exc.title, "detail": exc.detail,}, status_code=exc.status_code)
+
 
 
 async def custom_middleware(request: Request, call_next):
@@ -54,18 +61,12 @@ def endpoints(request: Request):
 
 @app.get("/endpoints/{endpoint_path:path}")
 async def endpoint_detail(endpoint_path: str):
-    service_path = ""
     try:
-        endpoint_key, endpoint_route = route_endpoint(endpoint_path)
-        service_path = get_service_path(endpoint_key)
-        return Knowledge_Objects[endpoint_key]
+            enpoint=Routing_Dictionary[endpoint_path]
     except Exception as e:
-        raise HTTPException(status_code=404,detail=({
-                    "error": repr(e),
-                    "endpoint_path": endpoint_path,
-                    "more info": service_path,
-                }),
-        )
+        raise EndpointNotFoundError(e) #repr(e)
+    return Knowledge_Objects[enpoint]
+      
 
 
 # endpoint to expose all packages
@@ -74,32 +75,21 @@ async def execute_endpoint(
     endpoint_path: str,
     body: Any = Body(...),
 ):
-    service_path = ""
     try:
-        endpoint_key, endpoint_route = route_endpoint(endpoint_path)
-        service_path = get_service_path(endpoint_key)
-
-        result = await Knowledge_Objects[endpoint_key].execute(body, endpoint_route)
+        enpoint=Routing_Dictionary[endpoint_path]
+    except Exception as e:
+        raise EndpointNotFoundError(e) #repr(e)
+  
+    try:
+        result = await Knowledge_Objects[enpoint.id].execute(body, enpoint.route)
         return {
             "result": result,
-            "info": {"ko": Knowledge_Objects[endpoint_key].metadata, "inputs": body},
+            "info": {"ko": Knowledge_Objects[enpoint.id].metadata, "inputs": body},
         }
     except Exception as e:
-        raise HTTPException(status_code=404,detail=({
-                    "error": repr(e),
-                    "endpoint_path": endpoint_path,
-                    "more info": service_path,
-                }),
-        )
-
-
-def get_service_path(endpoint_key):
-    return str(
-            Path(object_directory)
-            .joinpath(Knowledge_Objects[endpoint_key].local_url)
-            .joinpath("service.yaml")
-        )
+        raise InvalidInputParameterError(e) 
     
+
     
 def finalize():
     global object_directory
@@ -110,13 +100,7 @@ def finalize():
     except Exception:
         pass
 
-def route_endpoint(endpoint_path):
-    endpoint_key = endpoint_path
-    endpoint_route = ""
-    if endpoint_path in Routing_Dictionary.keys():
-        endpoint_key = Routing_Dictionary[endpoint_path].id
-        endpoint_route = Routing_Dictionary[endpoint_path].route
-    return endpoint_key, endpoint_route
+
 
 
 # run install if the app is starated using a web server like 

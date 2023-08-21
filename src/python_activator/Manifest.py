@@ -57,7 +57,7 @@ class Manifest:
             except TypeError as e:
                 ko.status = "Zip file not found: " + repr(e)
             except Exception as e:
-                ko.status = "Error unziping: " + repr(e)
+                ko.status = "Error unzipping: " + repr(e)
             else:
                 ko.status = "Ready for install"
             ko_list.append(ko)
@@ -146,17 +146,14 @@ class Knowledge_Object:
                 # Get the specific function from the module
                 self.function[route] = getattr(package_module, function)
 
-            self.status = "installed"
+            self.status = "Installed"
             return routes
         except Exception as e:
-            self.status = "not installed" + repr(e)
+            self.status = "Not installed" + repr(e)
 
         
     async def execute(self, body, route):
-        if route=="" and len(self.function)==1:
-            return self.function[list(self.function.keys())[0]](body)
-        else:
-            return self.function[route](body)
+        return self.function[route](body)
         
     def short_representation(self):        
         return {"@id": self.metadata["@id"] if self.metadata else '',"local_url": self.local_url, "status":self.status  }    
