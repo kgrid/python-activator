@@ -18,12 +18,13 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 
 class ManifestItem:
-    def __init__(self, id: str, directory: str, status: str):
+    def __init__(self, id: str, directory: str, status: str, error:str):
         self.id = id
         self.directory = directory
         self.status = status
+        self.error =error
     def short_representation(self):
-        return {"@id":self.id, "status":self.status}       
+        return {"@id":self.id, "status":self.status, "error":self.error}       
 
 def load_package(object_directory, manifest_item):
     manifest_path = os.environ.get("MANIFEST_PATH")
@@ -86,14 +87,16 @@ def generate_manifest_from_directory(directory: str):
         scanned_directories = [f.name for f in os.scandir(directory) if f.is_dir()]
         for sub_dir in scanned_directories:
             metadata={}
+            metadata["status"]="uninitialized"
             try:
                 with open(
                     Path(directory).joinpath(sub_dir, "metadata.json"), "r"
                 ) as file:
                     metadata = json.load(file)
-                metadata["status"]="Ready for install"     
+                metadata["status"]="loaded" 
+                metadata["error"]= ""    
             except Exception as e:
-                metadata["status"]= repr(e)
+                metadata["error"]= repr(e)
                 metadata["@id"]= sub_dir  
             
             metadata["local_url"] = sub_dir             
@@ -121,6 +124,7 @@ def generate_manifest_from_loaded_list(directory: str, ko_list:list[ManifestItem
             metadata["@id"]=ko.id            
             metadata["local_url"] = ko_name
             metadata["status"] = ko.status
+            metadata["error"] = ko.error
             manifest.append(metadata)
 
         with open(Path(directory).joinpath("local_manifest.json"), "w") as json_file:

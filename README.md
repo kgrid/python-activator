@@ -45,12 +45,15 @@ COLLECTION_PATH=<path> uvicorn python_activator.api:app --reload`
 > It is strongly reccommended taht you run the `python-activator` in a virtual environment to avoid placing modules loaded at runtime in your global space. Tools like `venv`, `poetry`, `pdm`, `pyenv`, etc. can make it significantly easier manage local virtual environments.
 
 #### Test the loaded knowledge objects
+Use http://127.0.0.1:8000/kos to get the list of knowledge objects and their status. You can see endpoints of each knowledge object under hasDeploymentSpecification field of metadata.
+
+#### Test the loaded endpoints of knowledge objects
 Use http://127.0.0.1:8000/endpoints to get the endpoints and their status. Each endpoint is accssible via an http POST reqest (e.g.using postman) to http://127.0.0.1:8000/endpoints/{id}  with a json body.
 
 
 #### python-simple-v1.0.zip:
 
-`POST http://127.0.0.1:8000/endpoints/python/simple/v1.0` with body:
+`POST http://127.0.0.1:8000/endpoints/python/simple/v1.0/welcome` with body:
 ```json
 {
     "name":"John Doe",
@@ -60,7 +63,7 @@ Use http://127.0.0.1:8000/endpoints to get the endpoints and their status. Each 
 
 #### for python-multiartifact-v1-0
 
-`POST http://127.0.0.1:8000/endpoints/python/multiartifact/v1.0` with body:
+`POST http://127.0.0.1:8000/endpoints/python/multiartifact/v1.0/welcome` with body:
 ```json
 {
     "name":"John Doe",
@@ -75,7 +78,7 @@ Use http://127.0.0.1:8000/endpoints to get the endpoints and their status. Each 
 
 ### Setting up the project
 
-The python-activator is a Poetry project with a `src/` layout. Poetry is use to manage dependencies, build the project, and help with teh developer workflow.
+The python-activator is a Poetry project with a `src/` layout. Poetry is used to manage dependencies, build the project, and help with the developer workflow.
 
 Make sure you have Python 3.10+ installed. You will use use `poetry` to create a virtual environment, install the app and it's dependencies on your machine (from source, editable, by default, includes dev dependencies)
 
@@ -100,8 +103,13 @@ poetry env info
 Your IDE's Python tooling and testing should work as for any Python project. Find out more about using `poetry` to manage dependencies, and build, maintainm, and publish projects here at [python-poetry.org](https://python-poetry.org/).
 
 ### Using the example collection
+The new activator does not support legacy knowledge objects. Examples of knowledge objects that are upgraded to be activated by this version of activator are included in ./tests/fixtures/installfiles/. A manifest file is also located in this folder for testing.
 
-Check out the KO example collection from https://github.com/kgrid-objects/example-collection and start the `python-activator`. 
+```bash
+COLLECTION_PATH=./collection  MANIFEST_PATH=./tests/fixtures/installfiles/manifest.json uvicorn python_activator.api:app
+```
+
+<!-- Check out the KO example collection from https://github.com/kgrid-objects/example-collection and start the `python-activator`. 
 
 ```bash
 # for the latest versions
@@ -116,7 +124,7 @@ Or start the `python-activator` with a manifest and it will download objects to 
 # Starting with a released collection
 MANIFEST_PATH=https://github.com/kgrid-objects/example-collection/releases/download/4.2.1/manifest.json 
 uvicorn python_activator.api:app 
-```
+``` -->
 
 ### Other ways to install the app
 

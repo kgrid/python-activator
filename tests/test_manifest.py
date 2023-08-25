@@ -10,7 +10,7 @@ def test_light_load_from_manifest():
     os.environ["COLLECTION_PATH"]=os.getcwd()+"/tests/fixtures/pyshelf"
     manifest=Manifest()
     ko_list=manifest.load_from_manifest()
-    assert ko_list[0].status=="Ready for install"
+    assert ko_list[0].status=="loaded"
     
 def test_generate_manifest_from_directory():
     try:
