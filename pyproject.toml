@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "python-activator"
-version = "0.1.0"
+version = "0.5"
 description = ""
-authors = ["Farid Seifi <farid.seifi@gmail.com>"]
+authors = ["kgrid developers <kgrid-developers@umich.edu>", "Farid Seifi <faridsei@med.umich.edu>"]
 readme = "README.md"
 packages = [{include = "python_activator", from = "src"}]
 

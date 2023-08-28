@@ -1,11 +1,10 @@
 import logging
 import os
-from pathlib import Path
 from typing import Any
 
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi import FastAPI, Request, Body
-from pydantic import BaseModel, Json
+
 
 from python_activator.Manifest import Manifest
 from python_activator.loader import set_object_directory
