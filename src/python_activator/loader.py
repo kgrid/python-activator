@@ -27,7 +27,7 @@ class ManifestItem:
         return {"@id":self.id, "status":self.status, "error":self.error}       
 
 def load_package(object_directory, manifest_item):
-    manifest_path = os.environ.get("MANIFEST_PATH")
+    manifest_path = os.environ.get("ORG_KGRID_PYTHON_ACTIVATOR_MANIFEST_PATH")
     scanned_directories = [f.name for f in os.scandir(object_directory) if f.is_dir()]
     ko_name=get_ko_name(manifest_path,manifest_item)
 
@@ -68,8 +68,8 @@ def create_directory_if_not_exists(path):
 
 
 def set_object_directory() -> str:
-    if os.environ.get("COLLECTION_PATH"):
-        object_directory = os.path.abspath(os.path.join(Path(os.environ["COLLECTION_PATH"]), ""))
+    if os.environ.get("ORG_KGRID_PYTHON_ACTIVATOR_COLLECTION_PATH"):
+        object_directory = os.path.abspath(os.path.join(Path(os.environ["ORG_KGRID_PYTHON_ACTIVATOR_COLLECTION_PATH"]), ""))
     else:
         object_directory = os.path.join(Path(os.getcwd()).joinpath("pyshelf"), "")
     create_directory_if_not_exists(object_directory)
@@ -106,7 +106,7 @@ def generate_manifest_from_directory(directory: str):
             json.dump(manifest, json_file, indent=2)
 
 def generate_manifest_from_loaded_list(directory: str, ko_list:list[ManifestItem]):
-        manifest_path = os.environ.get("MANIFEST_PATH")        
+        manifest_path = os.environ.get("ORG_KGRID_PYTHON_ACTIVATOR_MANIFEST_PATH")        
             
         manifest = []
         scanned_directories = [f.name for f in os.scandir(directory) if f.is_dir()]

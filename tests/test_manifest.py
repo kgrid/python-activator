@@ -9,8 +9,8 @@ def test_light_load_from_manifest():
     if os.path.isdir("/tests/fixtures/pyshelf"):
         shutil.rmtree(os.getcwd()+"/tests/fixtures/pyshelf")
     
-    os.environ["MANIFEST_PATH"]=os.getcwd()+"/tests/fixtures/installfiles/manifest.json"
-    os.environ["COLLECTION_PATH"]=os.getcwd()+"/tests/fixtures/pyshelf"
+    os.environ["ORG_KGRID_PYTHON_ACTIVATOR_MANIFEST_PATH"]=os.getcwd()+"/tests/fixtures/installfiles/manifest.json"
+    os.environ["ORG_KGRID_PYTHON_ACTIVATOR_COLLECTION_PATH"]=os.getcwd()+"/tests/fixtures/pyshelf"
     manifest=Manifest()
     ko_list=manifest.load_from_manifest()
     assert ko_list[0].status=="loaded"
