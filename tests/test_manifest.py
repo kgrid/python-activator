@@ -1,11 +1,14 @@
 import json
-import os
+import os, shutil
 from python_activator.Manifest import Manifest
 from python_activator.loader import generate_manifest_from_directory
 from pathlib import Path
 
    
 def test_light_load_from_manifest():
+    if os.path.isdir("/tests/fixtures/pyshelf"):
+        shutil.rmtree(os.getcwd()+"/tests/fixtures/pyshelf")
+    
     os.environ["MANIFEST_PATH"]=os.getcwd()+"/tests/fixtures/installfiles/manifest.json"
     os.environ["COLLECTION_PATH"]=os.getcwd()+"/tests/fixtures/pyshelf"
     manifest=Manifest()
