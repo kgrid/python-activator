@@ -41,7 +41,7 @@ class Manifest:
         logging.info("Loading from manifest")
 
         ko_list = []
-        manifest_path = os.environ.get("MANIFEST_PATH")
+        manifest_path = os.environ.get("ORG_KGRID_PYTHON_ACTIVATOR_MANIFEST_PATH")
         if not manifest_path:
             return
 
@@ -50,7 +50,7 @@ class Manifest:
             not parsed_url.scheme
         ):  # If a scheme is not present, it's likely not a URL make it absolute path if not
             manifest_path = os.path.abspath(manifest_path)
-            os.environ["MANIFEST_PATH"] = manifest_path
+            os.environ["ORG_KGRID_PYTHON_ACTIVATOR_MANIFEST_PATH"] = manifest_path
 
         resource = open_resource(manifest_path, "")
         input_manifest = json.loads(resource.read())  # load manifest

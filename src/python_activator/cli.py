@@ -31,7 +31,7 @@ def run(collection_path: str = "", manifest_path: str = ""):
     """Loads and installs knowledge objects and runs APIs."""
     set_collection_path(collection_path)
     if manifest_path:
-        os.environ["MANIFEST_PATH"] = manifest_path
+        os.environ["ORG_KGRID_PYTHON_ACTIVATOR_MANIFEST_PATH"] = manifest_path
 
 
     uvicorn.run(app, host="127.0.0.1", port=8000)
@@ -48,7 +48,7 @@ def load_from_manifest(collection_path: str = "", manifest_path: str = ""):
     """Loads KOs from a manifest and creates a local one."""
     set_collection_path(collection_path)
     if manifest_path:
-        os.environ["MANIFEST_PATH"] = manifest_path
+        os.environ["ORG_KGRID_PYTHON_ACTIVATOR_MANIFEST_PATH"] = manifest_path
 
     manifest = Manifest()
     manifest.load_from_manifest()
@@ -77,7 +77,7 @@ def uninstall_kos(collection_path: str = ""):
 
 def set_collection_path(collection_path: str) -> str:    
     if (collection_path):  
-        os.environ["COLLECTION_PATH"] = collection_path
+        os.environ["ORG_KGRID_PYTHON_ACTIVATOR_COLLECTION_PATH"] = collection_path
         
     
 

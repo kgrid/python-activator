@@ -4,7 +4,7 @@ The `python-activator` can be installed from a binary wheel (.whl)  or a source 
 
 ```bash
 # install from a release
-pip install https://github.com/kgrid/python-activator/releases/download/0.4-alpha/python_activator-0.1.0-py3-none-any.whl  
+pip install https://github.com/kgrid/python-activator/releases/download/0.5/python_activator-0.5-py3-none-any.whl  
 ```
 
 See the [development notes](#development) for [other ways to install the app](#other-ways-to-install-the-app).
@@ -16,7 +16,7 @@ See the [development notes](#development) for [other ways to install the app](#o
 > To use the command line interface (CLI) you must install the CLI as an _extra_. Add `[cli]` to the end of the `.whl` package name and quote the entire package path.
 
 ```bash 
-pip install "https://github.com/kgrid/python-activator/releases/download/0.4-alpha/python_activator-0.1.0-py3-none-any.whl[cli]"
+pip install "https://github.com/kgrid/python-activator/releases/download/0.5/python_activator-0.5-py3-none-any.whl[cli]"
 ```
 
 ### Use CLI to run 
@@ -26,7 +26,7 @@ Pass --collection-path and --manifest-path as input parameters:
 ```bash
 python-activator run --collection-path=<path> --manifest-path=<path>`
 ```
- or set `COLLECTION_PATH` and/or `MANIFEST_PATH` as an environment variables. If not specified `COLLECTION_PATH` defaults to `./pyshelf`. There is no default for `MANIFEST_PATH``.
+ or set `ORG_KGRID_PYTHON_ACTIVATOR_COLLECTION_PATH` and/or `ORG_KGRID_PYTHON_ACTIVATOR_MANIFEST_PATH` as an environment variables. Input parameters Override environment variables. If not specified `ORG_KGRID_PYTHON_ACTIVATOR_COLLECTION_PATH` defaults to `./pyshelf`. There is no default for `ORG_KGRID_PYTHON_ACTIVATOR_MANIFEST_PATH``.
 
 ### Run the application module directly 
 
@@ -35,7 +35,7 @@ The `python-activator` uses [FastAPI] which needs a WSGI/ASGI server like `uvico
 ```bash
 uvicorn --version
 # Running uvicorn 0.23.1 with CPython 3.11.4 on Darwin
-COLLECTION_PATH=<path> uvicorn python_activator.api:app --reload` 
+ORG_KGRID_PYTHON_ACTIVATOR_COLLECTION_PATH=<path> uvicorn python_activator.api:app --reload` 
 ```
 
 > **Note:** 
@@ -106,7 +106,7 @@ Your IDE's Python tooling and testing should work as for any Python project. Fin
 The new activator does not support legacy knowledge objects. Examples of knowledge objects that are upgraded to be activated by this version of activator are included in ./tests/fixtures/installfiles/. A manifest file is also located in this folder for testing.
 
 ```bash
-COLLECTION_PATH=./collection  MANIFEST_PATH=./tests/fixtures/installfiles/manifest.json uvicorn python_activator.api:app
+ORG_KGRID_PYTHON_ACTIVATOR_COLLECTION_PATH=./collection  ORG_KGRID_PYTHON_ACTIVATOR_MANIFEST_PATH=./tests/fixtures/installfiles/manifest.json uvicorn python_activator.api:app
 ```
 
 <!-- Check out the KO example collection from https://github.com/kgrid-objects/example-collection and start the `python-activator`. 
@@ -114,7 +114,7 @@ COLLECTION_PATH=./collection  MANIFEST_PATH=./tests/fixtures/installfiles/manife
 ```bash
 # for the latest versions
 git clone https://github.com/kgrid-objects/example-collection.git
-COLLECTION_PATH=../example-collection/collection 
+ORG_KGRID_PYTHON_ACTIVATOR_COLLECTION_PATH=../example-collection/collection 
 uvicorn python_activator.api:app 
 ```
 
@@ -122,13 +122,13 @@ Or start the `python-activator` with a manifest and it will download objects to 
 
 ```bash
 # Starting with a released collection
-MANIFEST_PATH=https://github.com/kgrid-objects/example-collection/releases/download/4.2.1/manifest.json 
+ORG_KGRID_PYTHON_ACTIVATOR_MANIFEST_PATH=https://github.com/kgrid-objects/example-collection/releases/download/4.2.1/manifest.json 
 uvicorn python_activator.api:app 
 ``` -->
 
 ### Other ways to install the app
 
-You may want to use `--force-reinstall` when testing to replace the packeage in the current environment.
+You may want to use `--force-reinstall` when trying to replace the app in the current environment.
 
 #### From local source or GitHub
 ```bash
@@ -140,7 +140,7 @@ pip install https://github.com/kgrid/python-activator.git  # from source --force
 #### from local builds (from `dist/`) during development
 
 ```bash
-pip install path/to/src/python-activator/dist/python_activator-0.1.0-py3-none-any.whl
+pip install path/to/src/python-activator/dist/python_activator-0.5-py3-none-any.whl
 ```
   
 
@@ -148,4 +148,4 @@ pip install path/to/src/python-activator/dist/python_activator-0.1.0-py3-none-an
 ## Notes
 
 ### Known issues
-Note: Multiartifact packages should not have a dot in their name as it causes issues for python domain names. Packages can have any name on their folder. If you are providing unzipped packages please rename your multiartifact packages like the following example: from  python-multiartifact-v1.0 to python-multiartifact-v1-0.
+Note: Multiartifact packages should not have a dot in their name as it causes issues for python domain names. Packages can have any name on their folder. If you are providing unzipped packages please rename your packages like the following example: from  python-multiartifact-v1.0 to python-multiartifact-v1-0.

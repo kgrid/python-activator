@@ -5,8 +5,8 @@ from python_activator.Manifest import Manifest
 
 def test_installing_knowledgeobject_programatically():
     #load
-    os.environ["MANIFEST_PATH"]=os.getcwd()+"/tests/fixtures/installfiles/manifest.json"
-    os.environ["COLLECTION_PATH"]=os.getcwd()+"/tests/fixtures/pyshelf"
+    os.environ["ORG_KGRID_PYTHON_ACTIVATOR_MANIFEST_PATH"]=os.getcwd()+"/tests/fixtures/installfiles/manifest.json"
+    os.environ["ORG_KGRID_PYTHON_ACTIVATOR_COLLECTION_PATH"]=os.getcwd()+"/tests/fixtures/pyshelf"
     manifest=Manifest()
     ko_list=manifest.load_from_manifest()
     
