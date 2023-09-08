@@ -1,7 +1,16 @@
 import subprocess
 import importlib
+import os
+from python_activator.Manifest import Manifest
 
 def test_installing_knowledgeobject_programatically():
+    #load
+    os.environ["MANIFEST_PATH"]=os.getcwd()+"/tests/fixtures/installfiles/manifest.json"
+    os.environ["COLLECTION_PATH"]=os.getcwd()+"/tests/fixtures/pyshelf"
+    manifest=Manifest()
+    ko_list=manifest.load_from_manifest()
+    
+    #install
     package_path = "tests/fixtures/pyshelf/python-simple-v1-0/"
     try:
     # Using subprocess.run for Python 3.5+
