@@ -76,11 +76,12 @@ def set_object_directory() -> str:
     return object_directory
 
 def get_ko_name(manifest_path,manifest_item)-> str:
+    test=parse.urljoin(manifest_path, manifest_item)
     if os.path.isfile(parse.urljoin(manifest_path, manifest_item)):
         ko_name = os.path.splitext(os.path.basename(manifest_item))[0]
     else:
         ko_name = os.path.basename(manifest_item)
-    return ko_name
+    return Path(ko_name).stem
         
 def generate_manifest_from_directory(directory: str):
         manifest = []
