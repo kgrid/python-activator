@@ -16,7 +16,7 @@ See the [development notes](#development) for [other ways to install the app](#o
 > To use the command line interface (CLI) you must install the CLI as an _extra_. Add `[cli]` to the end of the `.whl` package name and quote the entire package path.
 
 ```bash 
-pip install "https://github.com/kgrid/python-activator/releases/download/0.5/python_activator-0.5-py3-none-any.whl[cli]"
+pip install "python-activator[cli]@https://github.com/kgrid/python-activator/releases/download/0.6/python_activator-0.6-py3-none-any.whl"
 ```
 
 ### Use CLI to run 
