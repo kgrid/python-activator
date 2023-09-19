@@ -1,1 +1,1 @@
-web: uvicorn src.python_activator.api:app --bind :$PORT 
+web: uvicorn src.python_activator.api:app --port $PORT 
