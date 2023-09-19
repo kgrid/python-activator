@@ -1,1 +1,1 @@
-web: uvicorn python_activator.api:app
+web: uvicorn src.python_activator.api:app
