@@ -1,9 +1,9 @@
 import importlib.metadata
 from typing import Optional
-from python_activator.Manifest import Manifest
-from python_activator.loader import generate_manifest_from_directory
+from .Manifest import Manifest
+from .loader import generate_manifest_from_directory
 import typer
-from python_activator.api import *
+from .api import *
 import uvicorn 
 
 cli = typer.Typer()

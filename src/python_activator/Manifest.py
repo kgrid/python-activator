@@ -9,7 +9,7 @@ from urllib.parse import urlparse
 
 import yaml
 
-from python_activator.loader import (
+from .loader import (
     ManifestItem,
     generate_manifest_from_loaded_list,
     load_package,

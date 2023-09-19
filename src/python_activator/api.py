@@ -6,9 +6,9 @@ from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi import FastAPI, Request, Body
 
 
-from python_activator.Manifest import Manifest
-from python_activator.loader import set_object_directory
-from python_activator.exceptions import (
+from .Manifest import Manifest
+from .loader import set_object_directory
+from .exceptions import (
     EndpointNotFoundError,
     KONotFoundError,
     InvalidInputParameterError,
