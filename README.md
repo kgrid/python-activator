@@ -143,8 +143,18 @@ pip install https://github.com/kgrid/python-activator.git  # from source --force
 pip install path/to/src/python-activator/dist/python_activator-0.5-py3-none-any.whl
 ```
   
+## Deployment
+To Deploy on Heroku the requiremens.txt file needs to be updated using
+```
+poetry export --without-hashes > requirements.txt 
+```
 
+Procfile is needed for Heroku deployment with the following content
+```
+web: uvicorn src.python_activator.api:app --host=0.0.0.0 --port=${PORT:-5000}
+```
 
+Environment variables needs to be setup under Config Vars on Heroku.
 ## Notes
 
 ### Known issues
