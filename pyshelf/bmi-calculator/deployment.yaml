@@ -1,0 +1,17 @@
+/bmi:
+  post:    
+    engine: 
+      name: org.kgrid.python-activator
+      package: bmi_calculator
+      module: bmi
+      function: calculate_bmi
+    
+
+/category:
+  post:    
+    engine: 
+      name: org.kgrid.python-activator
+      package: bmi_calculator
+      module: bmi
+      function: get_bmi_category
+

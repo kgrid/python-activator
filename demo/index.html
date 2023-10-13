@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BMI Calculator</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+    <br/>
+    <div class="container">
+        <h1>BMI Calculator</h1>
+        <label for="unitSystem">Unit System:</label>
+        <select id="unitSystem">
+            <option value="metric">Metric</option>
+            <option value="imperial">Imperial</option>
+        </select>
+        <br>
+        <label for="weight">Weight:</label>
+        <input type="text" id="weight" class="input-box" placeholder="Enter weight (kg)">
+        <br>
+        <label for="height">Height:</label>
+        <input type="text" id="height" class="input-box" placeholder="Enter height (m)">
+        <br>
+
+        <button id="calculateBMIButton">Calculate BMI</button>
+        <div id="bmiResult"></div>
+        <br>
+<hr>
+        <label for="bmiValue">BMI Value:</label>
+        <input type="text" id="bmiValue" class="input-box" placeholder="Enter BMI Value">
+        <br>
+        <button id="calculateCategoryButton">Calculate BMI Category</button>
+        <div id="categoryResult"></div>
+    </div>
+
+    <script>
+        // Function to calculate BMI using an API
+        function calculateBMI() {
+            const weight = parseFloat(document.getElementById("weight").value);
+            const height = parseFloat(document.getElementById("height").value);
+            const unitSystem = document.getElementById("unitSystem").value;
+
+            if (!isNaN(weight) && !isNaN(height) && height > 0) {
+                // Create a JSON object with weight, height, and unit_system
+                const data = { weight, height, unit_system: unitSystem };
+
+                fetch("../endpoints/bmi/calculator/v1.0/bmi", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(result => {
+                    document.getElementById("bmiResult").innerHTML = `Your BMI is: ${result.result}`;
+                })
+                .catch(error => {
+                    console.error("API request error:", error);
+                    document.getElementById("bmiResult").innerHTML = "An error occurred while calculating BMI.";
+                });
+
+            } else {
+                document.getElementById("bmiResult").innerHTML = "Please enter valid weight and height.";
+            }
+        }
+
+        // Function to calculate BMI category using an API
+        function calculateCategory() {
+            const bmiValue = parseFloat(document.getElementById("bmiValue").value);
+
+            if (!isNaN(bmiValue)) {
+                fetch("../endpoints/bmi/calculator/v1.0/category", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ bmi: bmiValue })
+                })
+                .then(response => response.json())
+                .then(result => {
+                    document.getElementById("categoryResult").innerHTML = `BMI Category: ${result.result}`;
+                })
+                .catch(error => {
+                    console.error("API request error:", error);
+                    document.getElementById("categoryResult").innerHTML = "An error occurred while calculating BMI Category.";
+                });
+            } else {
+                document.getElementById("categoryResult").innerHTML = "Please enter a valid BMI value.";
+            }
+        }
+
+        // Add click event listeners
+        document.getElementById("calculateBMIButton").addEventListener("click", calculateBMI);
+        document.getElementById("calculateCategoryButton").addEventListener("click", calculateCategory);
+
+        // Update placeholders for weight and height based on the selected unit system
+        document.getElementById("unitSystem").addEventListener("change", () => {
+            const unitSystem = document.getElementById("unitSystem").value;
+            const weightPlaceholder = `Enter weight (${unitSystem === "metric" ? "kg" : "lb"})`;
+            const heightPlaceholder = `Enter height (${unitSystem === "metric" ? "m" : "ft"})`;
+            document.getElementById("weight").placeholder = weightPlaceholder;
+            document.getElementById("height").placeholder = heightPlaceholder;
+        });
+    </script>
+</body>
+</html>

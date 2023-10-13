@@ -4,6 +4,7 @@ from typing import Any
 
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi import FastAPI, Request, Body
+from fastapi.staticfiles import StaticFiles
 
 
 from .Manifest import Manifest
@@ -20,6 +21,8 @@ import yaml
 
 
 app = FastAPI()
+app.mount("/demo", StaticFiles(directory=Path("demo")), name="demo")
+
 Knowledge_Objects = {}
 Routing_Dictionary = {}
 object_directory = ""
@@ -112,7 +115,7 @@ async def execute_endpoint(
         result = function(body)
         return {
             "result": result,
-            "info": {endpoint_path: endpoint, "inputs": body},
+            "info": {"endpoint": endpoint, "inputs": body},
         }
     except Exception as e:
         raise InvalidInputParameterError(e)

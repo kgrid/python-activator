@@ -1,0 +1,80 @@
+openapi: 3.0.0
+info:
+  version: '1.0'
+  title: 'Daily Calorie Needs Calculator API'
+  description: 'Calculate estimated daily calorie needs based on the Harris-Benedict equation.'
+  license:
+    name: GNU General Public License v3 (GPL-3)
+    url: >-
+      https://tldrlegal.com/license/gnu-general-public-license-v3-(gpl-3)#fulltext
+  contact:
+    name: KGrid Team
+    email: kgrid-developers@umich.edu
+    url: 'http://kgrid.org'
+servers:
+  - url: /endpoints/calorie/calculator/v1.0
+    description: Calculate Daily Calorie Needs
+tags:
+  - name: KO Endpoints
+    description: Calorie calculation Endpoints    
+paths:
+  /calculate_calories:
+    post:
+      summary: Calculate Daily Calorie Needs
+      description: Calculates the estimated daily calorie needs based on the Harris-Benedict equation.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                gender:
+                  type: string
+                  enum: [male, female]
+                  description: Gender of the person.
+                  example: male
+                weight:
+                  type: number
+                  format: float
+                  description: Weight of the person. If using 'imperial' unit_system, use weight in pounds.
+                  example: 70.0
+                height:
+                  type: number
+                  format: float
+                  description: Height of the person. If using 'imperial' unit_system, use height in inches.
+                  example: 175.0
+                age:
+                  type: integer
+                  description: Age of the person in years.
+                  example: 30
+                activity_level:
+                  type: string
+                  enum: [sedentary, lightly active, moderately active, very active]
+                  description: Activity level of the person.
+                  example: moderately active
+                unit_system:
+                  type: string
+                  enum: [metric, imperial]
+                  description: Unit system for weight and height ('metric' or 'imperial').
+                  example: metric
+      responses:
+        '200':
+          description: Successfully calculated daily calorie needs.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  daily_calories:
+                    type: number
+                    format: float
+                    description: Estimated daily calorie needs.
+                    example: 2500.0
+                $ref: 'https://demo.kgrid.org/schemas/openapischemas.yaml#/components/schemas/genericresponse'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: 'https://demo.kgrid.org/schemas/openapischemas.yaml#/components/schemas/genericerror'

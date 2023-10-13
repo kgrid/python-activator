@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "python-multiartifact-v1-0"
+version = "0.1.0"
+description = "Python Multi Artifact V1.0"
+authors = ["kgrid developers <kgrid-developers@umich.edu>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+tinyhtml = "^1.2.0"
+leftpad = "^0.1.2"
+
+[tool.poetry.group.dev.dependencies]
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
