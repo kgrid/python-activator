@@ -3,7 +3,17 @@ import os, shutil
 from python_activator.Manifest import Manifest
 from python_activator.loader import generate_manifest_from_directory
 from pathlib import Path
+import pytest
 
+def test_from_manifest_without_manifest():
+    if os.path.isdir("/tests/fixtures/pyshelf"):
+        shutil.rmtree(os.getcwd()+"/tests/fixtures/pyshelf")
+    os.environ["ORG_KGRID_PYTHON_ACTIVATOR_COLLECTION_PATH"]=os.getcwd()+"/tests/fixtures/pyshelf"
+    manifest=Manifest()
+    try:
+        ko_list=manifest.load_from_manifest()
+    except Exception as e:
+        pytest.fail(f"Function load_from_manifest() raised an exception: {e}")
    
 def test_light_load_from_manifest():
     if os.path.isdir("/tests/fixtures/pyshelf"):
