@@ -19,7 +19,8 @@ from .loader import (
 
 object_directory = ""
 Routing_Dictionary = {}
-
+has_input_manifest=True
+ 
 logger = logging.getLogger("Manifest")
 # Create a log handler that sends messages to stderr
 stderr_handler = logging.StreamHandler(sys.stderr)
@@ -43,6 +44,9 @@ class Manifest:
         ko_list = []
         manifest_path = os.environ.get("ORG_KGRID_PYTHON_ACTIVATOR_MANIFEST_PATH")
         if not manifest_path:
+            logging.info("ORG_KGRID_PYTHON_ACTIVATOR_MANIFEST_PATH is not defined.");
+            global has_input_manifest
+            has_input_manifest=False
             return
 
         parsed_url = urlparse(manifest_path)
@@ -75,7 +79,14 @@ class Manifest:
         return ko_list
 
     def install_loaded_objects(self):
-        logging.info("Installing loaded objects")
+        if has_input_manifest:
+            logging.info("Installing loaded objects")
+        elif os.path.exists(Path(object_directory).joinpath("local_manifest.json")):
+            logging.info("Installing objects from local manifest")
+        else:
+            logging.info("Local manifest does not exist")
+            return {},{}
+            
         Knowledge_Objects = {}
         global Routing_Dictionary
         Routing_Dictionary = {}
