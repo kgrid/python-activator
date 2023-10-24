@@ -20,7 +20,15 @@ from fastapi.responses import FileResponse
 import yaml
 
 
-app = FastAPI()
+app = FastAPI(
+    title="Python Activator",
+    description="This activator is a reference implementation of kgrid activator specs. It activates knowledge objects that are implemented using Python and comply to kgrid specs.",
+    version="0.7.0",
+    contact={
+        "name": "kgrid developers",
+        "url": "https://kgrid.org/",
+        "email": "kgrid-developers@umich.edu",
+    })
 app.mount("/demo", StaticFiles(directory=Path("demo")), name="demo")
 
 Knowledge_Objects = {}
@@ -121,39 +129,31 @@ async def execute_endpoint(
         raise InvalidInputParameterError(e)
 
 
-@app.get("/kos/{ko_id:path}/service.yaml")
-async def download_file(ko_id: str):
-    full_path = str(
-        Path(object_directory)
-        .joinpath(Knowledge_Objects[ko_id].metadata["local_url"])
-        .joinpath("service.yaml")
-    )
-    return FileResponse(full_path, filename="service.yaml")
-
-
 @app.get("/kos/{ko_id:path}/service")
-async def get_data(ko_id: str):
-    # Load the YAML file
+async def download_file(ko_id: str):
+    file = Knowledge_Objects[ko_id].metadata["hasServiceSpecification"] 
     full_path = str(
         Path(object_directory)
         .joinpath(Knowledge_Objects[ko_id].metadata["local_url"])
-        .joinpath("service.yaml")
+        .joinpath(file)
     )
-    with open(full_path, "r") as yaml_file:
-        data = yaml.safe_load(yaml_file)
-    return {"data": data}
+    headers = {
+        "Content-Type": "application/x-yaml",  # or "text/yaml"
+        "Content-Disposition": f"attachment; filename={file}",
+
+    }
+    return FileResponse(full_path,headers=headers)
 
 
 @app.get("/kos")
 def endpoints(request: Request):
     for obj_key in Knowledge_Objects:
         if Knowledge_Objects[obj_key].metadata["status"] == "activated":
-            Knowledge_Objects[obj_key].metadata["swaggerLink"] = (
-                "https://editor.swagger.io?url="
-                + request.url.__str__()
+            Knowledge_Objects[obj_key].metadata["documentation"] = (
+                request.url.__str__()
                 + "/"
                 + Knowledge_Objects[obj_key].metadata["@id"]
-                + "/service.yaml"
+                + "/doc"
             )
     return [obj.metadata for obj in Knowledge_Objects.values()]
 
@@ -164,7 +164,7 @@ async def endpoint_detail(ko_id: str, request: Request):
         response = RedirectResponse(
             url="https://editor.swagger.io?url="
             + request.url.__str__().rstrip("/doc")
-            + "/service.yaml"
+            + "/service"
         )
         return response
     except Exception as e:
@@ -174,8 +174,8 @@ async def endpoint_detail(ko_id: str, request: Request):
 @app.get("/kos/{ko_id:path}")
 async def endpoint_detail(ko_id: str, request: Request):
     try:
-        Knowledge_Objects[ko_id].metadata["swaggerLink"] = (
-            "https://editor.swagger.io?url=" + request.url.__str__() + "/service.yaml"
+        Knowledge_Objects[ko_id].metadata["documentation"] = (
+            request.url.__str__() + "/doc"
         )
         return Knowledge_Objects[ko_id].metadata
     except Exception as e:
@@ -196,13 +196,4 @@ async def startup_event():
     object_directory = set_object_directory()
 
 
-##to be deleted, related to experience for openapi doc
-#     for ko in Knowledge_Objects.values():
-#         # Load your OpenAPI documentation
-#         if ko.metadata["status"]=="activated":
-#             full_path = str(Path(object_directory).joinpath(ko.metadata["local_url"]).joinpath("service.yaml"))
-#             with open(full_path, 'r') as file:
-#                 openapi_data = yaml.safe_load(file)
 
-#             # Create FastAPI routes from the OpenAPI data
-#             create_openapi_routes(openapi_data)
