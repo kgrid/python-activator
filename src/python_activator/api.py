@@ -118,7 +118,11 @@ async def execute_endpoint(
 
 @app.get("/kos/{ko_id:path}/service")
 async def download_file(ko_id: str):
-    file = Knowledge_Objects[ko_id].metadata.get("hasServiceSpecification" ,"service.yaml") #default to service.yaml
+    try:
+        file = Knowledge_Objects[ko_id].metadata.get("hasServiceSpecification" ,"service.yaml") #default to service.yaml
+    except Exception as e:
+        raise KONotFoundError(e)
+    
     full_path = str(
         Path(object_directory)
         .joinpath(Knowledge_Objects[ko_id].metadata["local_url"])
@@ -128,7 +132,6 @@ async def download_file(ko_id: str):
         "Content-Type": "application/x-yaml",  # or "text/yaml"
         "Content-Disposition": f"attachment; filename={file}",
     }
-    print(full_path)
     if not os.path.isfile(full_path):
         raise HTTPException(status_code=404, detail="File not found")
     return FileResponse(full_path,headers=headers)
