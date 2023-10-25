@@ -1,12 +1,9 @@
 import logging
 import os
 from typing import Any
-
 from fastapi.responses import JSONResponse, RedirectResponse
-from fastapi import FastAPI, Request, Body
+from fastapi import FastAPI, HTTPException, Request, Body
 from fastapi.staticfiles import StaticFiles
-
-
 from .Manifest import Manifest
 from .loader import set_object_directory
 from .exceptions import (
@@ -17,8 +14,6 @@ from .exceptions import (
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 from fastapi.responses import FileResponse
-import yaml
-
 
 app = FastAPI(
     title="Python Activator",
@@ -29,17 +24,17 @@ app = FastAPI(
         "url": "https://kgrid.org/",
         "email": "kgrid-developers@umich.edu",
     })
-app.mount("/demo", StaticFiles(directory=Path("demo")), name="demo")
+
+app.mount("/demo", StaticFiles(directory=Path("demo")), name="demo") #demo static file
 
 Knowledge_Objects = {}
 Routing_Dictionary = {}
 object_directory = ""
 
 origins = [
-    "http://editor.swagger.io",  # Add the domain of the Swagger Editor here
+    "http://editor.swagger.io",  # Add the domain of the external systems using apis. for all origins use ["*"]
     "https://editor.swagger.io",
 ]
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -47,7 +42,6 @@ app.add_middleware(
     allow_methods=["*"],  # Allow all HTTP methods, including OPTIONS
     allow_headers=["*"],
 )
-
 
 @app.exception_handler(EndpointNotFoundError)
 @app.exception_handler(KONotFoundError)
@@ -66,19 +60,14 @@ async def custom_middleware(request: Request, call_next):
     path = request.url.path
     if path.startswith("/endpoints/") and request.method == "POST":
         logging.info(f"Request to endpoint {path}")
-
         response = await call_next(request)
-
         logging.info(f"Response to endpoint {path}: {response.status_code}")
     elif path.startswith("/kos/") and request.method == "POST":
         logging.info(f"Request to ko {path}")
-
         response = await call_next(request)
-
         logging.info(f"Response to ko {path}: {response.status_code}")
     else:
         response = await call_next(request)
-
     return response
 
 
@@ -107,7 +96,6 @@ async def endpoint_detail(endpoint_path: str, request: Request):
         raise EndpointNotFoundError(e)  # repr(e)
 
 
-# endpoint to expose all packages
 @app.post("/endpoints/{endpoint_path:path}")
 async def execute_endpoint(
     endpoint_path: str,
@@ -117,7 +105,6 @@ async def execute_endpoint(
         endpoint = Routing_Dictionary[endpoint_path]
     except Exception as e:
         raise EndpointNotFoundError(e)  # repr(e)
-
     try:
         function = endpoint["function"]
         result = function(body)
@@ -131,7 +118,7 @@ async def execute_endpoint(
 
 @app.get("/kos/{ko_id:path}/service")
 async def download_file(ko_id: str):
-    file = Knowledge_Objects[ko_id].metadata["hasServiceSpecification"] 
+    file = Knowledge_Objects[ko_id].metadata.get("hasServiceSpecification" ,"service.yaml") #default to service.yaml
     full_path = str(
         Path(object_directory)
         .joinpath(Knowledge_Objects[ko_id].metadata["local_url"])
@@ -140,11 +127,13 @@ async def download_file(ko_id: str):
     headers = {
         "Content-Type": "application/x-yaml",  # or "text/yaml"
         "Content-Disposition": f"attachment; filename={file}",
-
     }
+    print(full_path)
+    if not os.path.isfile(full_path):
+        raise HTTPException(status_code=404, detail="File not found")
     return FileResponse(full_path,headers=headers)
-
-
+    
+        
 @app.get("/kos")
 def endpoints(request: Request):
     for obj_key in Knowledge_Objects:
@@ -182,7 +171,7 @@ async def endpoint_detail(ko_id: str, request: Request):
         raise KONotFoundError(e)
 
 
-# run install if the app is starated using a web server like
+# startup runs if the app is starated using a web server like
 # "poetry run uvicorn python_activator.api:app --reload"
 @app.on_event("startup")
 async def startup_event():
