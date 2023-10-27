@@ -24,5 +24,9 @@
   { 
       "@id": "nonExistent",
       "url": "nonExistent.zip"
+  },
+  { 
+      "@id": "BMICalculator",
+      "url": "bmi-calc-ko.zip"
   }
 ]
