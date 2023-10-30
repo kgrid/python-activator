@@ -120,6 +120,14 @@ async def execute_endpoint(
 async def download_file(ko_id: str):
     try:
         file = Knowledge_Objects[ko_id].metadata.get("hasServiceSpecification" ,"service.yaml") #default to service.yaml
+        #if version 2 (or after) use service file defined in python service
+        if Knowledge_Objects[ko_id].metadata.get("kgrid","")!="" and Knowledge_Objects[ko_id].metadata["kgrid"]=="2": 
+            services=Knowledge_Objects[ko_id].metadata["hasService"]
+            for service in services:                
+                if service["@type"] == "API" and  service.get("implementedBy","")!="" and service.get("implementedBy","").get("@type","") == "org.kgrid.python-activator":
+                    file = service.get("hasServiceSpecification",Path(service["implementedBy"]["@id"]).joinpath( "service.yaml"))
+                    break                  
+
     except Exception as e:
         raise KONotFoundError(e)
     
