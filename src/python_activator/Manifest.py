@@ -133,34 +133,14 @@ class Knowledge_Object:
     metadata = None
     python_service=""
     url = ""
+    endpoints=None
 
     def __init__(self, id, local_url, status, error):
         try:
             with open(
                 Path(object_directory).joinpath(local_url, "metadata.json"), "r"
             ) as file:
-                self.metadata = json.load(file)
-
-            deployment_file=Path(object_directory).joinpath(local_url,self.metadata.get("hasDeploymentSpecification","deployment.yaml"))
-            
-            self.python_service=Path(object_directory).joinpath(local_url)
-            
-            #code to support kgrid object model version 2
-            if self.metadata.get("kgrid","")!="" and self.metadata["kgrid"]=="2":                
-                services=self.metadata["hasService"]
-                for service in services:                   
-                    if service["@type"] == "API" and  service.get("implementedBy","")!="" and service.get("implementedBy","").get("@type","") == "org.kgrid.python-activator":
-                        deployment_file = Path(object_directory).joinpath(local_url,service["implementedBy"].get("hasDeploymentSpecification",Path(service["implementedBy"]["@id"]).joinpath( "deployment.yaml")))
-                        self.python_service=Path(object_directory).joinpath(local_url,service["implementedBy"]["@id"])
-                        break  
-                         
-            with open(
-                deployment_file, "r"
-            ) as file:
-                self.metadata["hasDeploymentSpecification"] = [
-                    {"@id": id + key, **obj}
-                    for key, obj in yaml.safe_load(file).items()
-                ]
+                self.metadata = json.load(file)            
 
         except:
             self.metadata = {}
@@ -172,6 +152,27 @@ class Knowledge_Object:
         self.metadata["local_url"] = local_url
 
     def install(self):
+        deployment_file=Path(object_directory).joinpath(self.metadata["local_url"],self.metadata.get("hasDeploymentSpecification","deployment.yaml"))
+            
+        self.python_service=Path(object_directory).joinpath(self.metadata["local_url"])
+        
+        #code to support kgrid object model version 2
+        if self.metadata.get("kgrid","")!="" and self.metadata["kgrid"]=="2":                
+            services=self.metadata["hasService"]
+            for service in services:                   
+                if service["@type"] == "API" and  service.get("implementedBy","")!="" and service.get("implementedBy","").get("@type","") == "org.kgrid.python-activator":
+                    deployment_file = Path(object_directory).joinpath(self.metadata["local_url"],service["implementedBy"].get("hasDeploymentSpecification",Path(service["implementedBy"]["@id"]).joinpath( "deployment.yaml")))
+                    self.python_service=Path(object_directory).joinpath(self.metadata["local_url"],service["implementedBy"]["@id"])
+                    break  
+                        
+        with open(
+            deployment_file, "r"
+        ) as file:
+            self.endpoints = [
+                {"@id": self.metadata["@id"] + key, **obj}
+                for key, obj in yaml.safe_load(file).items()
+            ]
+                
         try:
             subprocess.run(
                 [
@@ -186,7 +187,7 @@ class Knowledge_Object:
             self.metadata["error"] = "not installed " + repr(e)
 
         all_endpoints_activated = True
-        for endpoint in self.metadata["hasDeploymentSpecification"]:
+        for endpoint in self.endpoints:
             try:
                 if endpoint["post"]["engine"]["name"] != "org.kgrid.python-activator":
                     return
