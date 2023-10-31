@@ -4,7 +4,7 @@ from .Manifest import Manifest
 from .loader import generate_manifest_from_directory
 import typer
 from .api import *
-import uvicorn 
+import uvicorn
 
 cli = typer.Typer()
 
@@ -32,7 +32,6 @@ def run(collection_path: str = "", manifest_path: str = ""):
     set_collection_path(collection_path)
     if manifest_path:
         os.environ["ORG_KGRID_PYTHON_ACTIVATOR_MANIFEST_PATH"] = manifest_path
-
 
     uvicorn.run(app, host="127.0.0.1", port=8000)
 
@@ -75,11 +74,9 @@ def uninstall_kos(collection_path: str = ""):
         pass
 
 
-def set_collection_path(collection_path: str) -> str:    
-    if (collection_path):  
+def set_collection_path(collection_path: str) -> str:
+    if collection_path:
         os.environ["ORG_KGRID_PYTHON_ACTIVATOR_COLLECTION_PATH"] = collection_path
-        
-    
 
 
 if __name__ == "__main__":

@@ -19,8 +19,8 @@ from .loader import (
 
 object_directory = ""
 Routing_Dictionary = {}
-has_input_manifest=True
- 
+has_input_manifest = True
+
 logger = logging.getLogger("Manifest")
 # Create a log handler that sends messages to stderr
 stderr_handler = logging.StreamHandler(sys.stderr)
@@ -44,9 +44,9 @@ class Manifest:
         ko_list = []
         manifest_path = os.environ.get("ORG_KGRID_PYTHON_ACTIVATOR_MANIFEST_PATH")
         if not manifest_path:
-            logging.info("ORG_KGRID_PYTHON_ACTIVATOR_MANIFEST_PATH is not defined.");
+            logging.info("ORG_KGRID_PYTHON_ACTIVATOR_MANIFEST_PATH is not defined.")
             global has_input_manifest
-            has_input_manifest=False
+            has_input_manifest = False
             return
 
         parsed_url = urlparse(manifest_path)
@@ -85,8 +85,8 @@ class Manifest:
             logging.info("Installing objects from local manifest")
         else:
             logging.info("Local manifest does not exist")
-            return {},{}
-            
+            return {}, {}
+
         Knowledge_Objects = {}
         global Routing_Dictionary
         Routing_Dictionary = {}
@@ -124,23 +124,24 @@ class Manifest:
                 logging.info(
                     {
                         "@id": manifest_item["@id"],
-                        "status": "error uninstalling ","error": repr(e),
+                        "status": "error uninstalling ",
+                        "error": repr(e),
                     }
                 )
 
 
 class Knowledge_Object:
     metadata = None
-    python_service=""
+    python_service = ""
     url = ""
-    endpoints=None
+    endpoints = None
 
     def __init__(self, id, local_url, status, error):
         try:
             with open(
                 Path(object_directory).joinpath(local_url, "metadata.json"), "r"
             ) as file:
-                self.metadata = json.load(file)            
+                self.metadata = json.load(file)
 
         except:
             self.metadata = {}
@@ -152,37 +153,58 @@ class Knowledge_Object:
         self.metadata["local_url"] = local_url
 
     def install(self):
-        deployment_file=Path(object_directory).joinpath(self.metadata["local_url"],self.metadata.get("hasDeploymentSpecification","deployment.yaml"))
-            
-        self.python_service=Path(object_directory).joinpath(self.metadata["local_url"])
-        
-        #code to support kgrid object model version 2
-        if self.metadata.get("kgrid","")!="" and self.metadata["kgrid"]=="2":                
-            services=self.metadata["hasService"]
-            for service in services:                   
-                if service["@type"] == "API" and  service.get("implementedBy","")!="" and service.get("implementedBy","").get("@type","") == "org.kgrid.python-activator":
-                    deployment_file = Path(object_directory).joinpath(self.metadata["local_url"],service["implementedBy"].get("hasDeploymentSpecification",Path(service["implementedBy"]["@id"]).joinpath( "deployment.yaml")))
-                    self.python_service=Path(object_directory).joinpath(self.metadata["local_url"],service["implementedBy"]["@id"])
-                    break  
-                        
-        with open(
-            deployment_file, "r"
-        ) as file:
+        deployment_file = Path(object_directory).joinpath(
+            self.metadata["local_url"],
+            self.metadata.get("hasDeploymentSpecification", "deployment.yaml"),
+        )
+        self.python_service = Path(object_directory).joinpath(
+            self.metadata["local_url"]
+        )
+        engine = ""
+        # code to support kgrid object model version 2
+        if self.metadata.get("kgrid", "") != "" and self.metadata["kgrid"] == "2":
+            services = self.metadata["hasService"]
+            for service in services:
+                if (
+                    service["@type"] == "API"
+                    and service.get("implementedBy", "") != ""
+                    and service.get("implementedBy", "").get("@type", "")
+                    == "org.kgrid.python-activator"
+                ):
+                    deployment_file = Path(object_directory).joinpath(
+                        self.metadata["local_url"],
+                        Path(service["implementedBy"]["@id"]).joinpath(
+                            service.get("hasDeploymentSpecification", "deployment.yaml")
+                        ),
+                    )
+                    self.python_service = Path(object_directory).joinpath(
+                        self.metadata["local_url"], service["implementedBy"]["@id"]
+                    )
+                    engine = "org.kgrid.python-activator"
+                    break
+
+        with open(deployment_file, "r") as file:
             self.endpoints = [
                 {"@id": self.metadata["@id"] + key, **obj}
                 for key, obj in yaml.safe_load(file).items()
             ]
-                
+
         try:
-            subprocess.run(
-                [
-                    "pip",
-                    "install",
-                    self.python_service,
-                ],
-                check=True,
-            )
-            self.metadata["status"] = "installed"
+            if self.metadata.get("kgrid", "") == "":
+                engine = self.endpoints[0]["post"]["engine"][
+                    "name"
+                ]  # in case of version 1 use first endpoint engine
+            if engine == "org.kgrid.python-activator":
+                subprocess.run(
+                    [
+                        "pip",
+                        "install",
+                        self.python_service,
+                    ],
+                    check=True,
+                )
+                self.metadata["status"] = "installed"
+
         except Exception as e:
             self.metadata["error"] = "not installed " + repr(e)
 
@@ -210,17 +232,17 @@ class Knowledge_Object:
             self.metadata["status"] = "activated"
 
     def short_representation(self):
-        representation= {
+        representation = {
             "@id": self.metadata["@id"] if self.metadata else "",
             "local_url": self.metadata["local_url"],
             "status": self.metadata["status"],
         }
-        
+
         try:
-            representation["error"]=self.metadata["error"] 
+            representation["error"] = self.metadata["error"]
         except Exception as e:
             pass
-        
+
         return representation
 
 

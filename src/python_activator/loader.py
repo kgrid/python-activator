@@ -14,22 +14,28 @@ logger = logging.getLogger("Loader")
 stderr_handler = logging.StreamHandler(sys.stderr)
 
 # Configure logging to use the stderr handler
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(name)s - %(funcName)s - %(message)s', handlers=[stderr_handler])
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(name)s - %(funcName)s - %(message)s",
+    handlers=[stderr_handler],
+)
 
 
 class ManifestItem:
-    def __init__(self, id: str, directory: str, status: str, error:str):
+    def __init__(self, id: str, directory: str, status: str, error: str):
         self.id = id
         self.directory = directory
         self.status = status
-        self.error =error
+        self.error = error
+
     def short_representation(self):
-        return {"@id":self.id, "status":self.status, "error":self.error}       
+        return {"@id": self.id, "status": self.status, "error": self.error}
+
 
 def load_package(object_directory, manifest_item):
     manifest_path = os.environ.get("ORG_KGRID_PYTHON_ACTIVATOR_MANIFEST_PATH")
     scanned_directories = [f.name for f in os.scandir(object_directory) if f.is_dir()]
-    ko_name=get_ko_name(manifest_path,manifest_item)
+    ko_name = get_ko_name(manifest_path, manifest_item)
 
     # 1. if knowledge object already in the collection directory continue to the next ko in list
     if ko_name in scanned_directories:
@@ -54,7 +60,7 @@ def open_resource(base, relative):
     try:
         resource = urllib.request.urlopen(resolved)
     except:
-        raise FileNotFoundError("Could not find resource file at "+ resolved)
+        raise FileNotFoundError("Could not find resource file at " + resolved)
 
     return resource
 
@@ -69,64 +75,69 @@ def create_directory_if_not_exists(path):
 
 def set_object_directory() -> str:
     if os.environ.get("ORG_KGRID_PYTHON_ACTIVATOR_COLLECTION_PATH"):
-        object_directory = os.path.abspath(os.path.join(Path(os.environ["ORG_KGRID_PYTHON_ACTIVATOR_COLLECTION_PATH"]), ""))
+        object_directory = os.path.abspath(
+            os.path.join(
+                Path(os.environ["ORG_KGRID_PYTHON_ACTIVATOR_COLLECTION_PATH"]), ""
+            )
+        )
     else:
         object_directory = os.path.join(Path(os.getcwd()).joinpath("pyshelf"), "")
     create_directory_if_not_exists(object_directory)
     return object_directory
 
-def get_ko_name(manifest_path,manifest_item)-> str:
-    test=parse.urljoin(manifest_path, manifest_item)
+
+def get_ko_name(manifest_path, manifest_item) -> str:
+    test = parse.urljoin(manifest_path, manifest_item)
     if os.path.isfile(parse.urljoin(manifest_path, manifest_item)):
         ko_name = os.path.splitext(os.path.basename(manifest_item))[0]
     else:
         ko_name = os.path.basename(manifest_item)
     return Path(ko_name).stem
-        
+
+
 def generate_manifest_from_directory(directory: str):
-        manifest = []
-        scanned_directories = [f.name for f in os.scandir(directory) if f.is_dir()]
-        for sub_dir in scanned_directories:
-            metadata={}
-            metadata["status"]="uninitialized"
+    manifest = []
+    scanned_directories = [f.name for f in os.scandir(directory) if f.is_dir()]
+    for sub_dir in scanned_directories:
+        metadata = {}
+        metadata["status"] = "uninitialized"
+        try:
+            with open(Path(directory).joinpath(sub_dir, "metadata.json"), "r") as file:
+                metadata = json.load(file)
+            metadata["status"] = "loaded"
+            metadata["error"] = ""
+        except Exception as e:
+            metadata["error"] = repr(e)
+            metadata["@id"] = sub_dir
+
+        metadata["local_url"] = sub_dir
+        manifest.append(metadata)
+
+    with open(Path(directory).joinpath("local_manifest.json"), "w") as json_file:
+        json.dump(manifest, json_file, indent=2)
+
+
+def generate_manifest_from_loaded_list(directory: str, ko_list: list[ManifestItem]):
+    manifest_path = os.environ.get("ORG_KGRID_PYTHON_ACTIVATOR_MANIFEST_PATH")
+
+    manifest = []
+    scanned_directories = [f.name for f in os.scandir(directory) if f.is_dir()]
+    for ko in ko_list:
+        ko_name = get_ko_name(manifest_path, ko.directory)
+        metadata = {}
+        if ko_name in scanned_directories:
             try:
                 with open(
-                    Path(directory).joinpath(sub_dir, "metadata.json"), "r"
+                    Path(directory).joinpath(ko_name, "metadata.json"), "r"
                 ) as file:
                     metadata = json.load(file)
-                metadata["status"]="loaded" 
-                metadata["error"]= ""    
-            except Exception as e:
-                metadata["error"]= repr(e)
-                metadata["@id"]= sub_dir  
-            
-            metadata["local_url"] = sub_dir             
-            manifest.append(metadata)
+            except:
+                pass
+        metadata["@id"] = ko.id
+        metadata["local_url"] = ko_name
+        metadata["status"] = ko.status
+        metadata["error"] = ko.error
+        manifest.append(metadata)
 
-        with open(Path(directory).joinpath("local_manifest.json"), "w") as json_file:
-            json.dump(manifest, json_file, indent=2)
-
-def generate_manifest_from_loaded_list(directory: str, ko_list:list[ManifestItem]):
-        manifest_path = os.environ.get("ORG_KGRID_PYTHON_ACTIVATOR_MANIFEST_PATH")        
-            
-        manifest = []
-        scanned_directories = [f.name for f in os.scandir(directory) if f.is_dir()]
-        for ko in ko_list:
-            ko_name=get_ko_name(manifest_path,ko.directory)           
-            metadata={}
-            if ko_name in scanned_directories:                    
-                try:
-                    with open(
-                        Path(directory).joinpath(ko_name, "metadata.json"), "r"
-                    ) as file:
-                        metadata = json.load(file)
-                except:
-                    pass
-            metadata["@id"]=ko.id            
-            metadata["local_url"] = ko_name
-            metadata["status"] = ko.status
-            metadata["error"] = ko.error
-            manifest.append(metadata)
-
-        with open(Path(directory).joinpath("local_manifest.json"), "w") as json_file:
-            json.dump(manifest, json_file, indent=2)   
+    with open(Path(directory).joinpath("local_manifest.json"), "w") as json_file:
+        json.dump(manifest, json_file, indent=2)

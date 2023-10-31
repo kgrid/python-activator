@@ -23,9 +23,10 @@ app = FastAPI(
         "name": "kgrid developers",
         "url": "https://kgrid.org/",
         "email": "kgrid-developers@umich.edu",
-    })
+    },
+)
 
-app.mount("/demo", StaticFiles(directory=Path("demo")), name="demo") #demo static file
+app.mount("/demo", StaticFiles(directory=Path("demo")), name="demo")  # demo static file
 
 Knowledge_Objects = {}
 Routing_Dictionary = {}
@@ -42,6 +43,7 @@ app.add_middleware(
     allow_methods=["*"],  # Allow all HTTP methods, including OPTIONS
     allow_headers=["*"],
 )
+
 
 @app.exception_handler(EndpointNotFoundError)
 @app.exception_handler(KONotFoundError)
@@ -119,18 +121,30 @@ async def execute_endpoint(
 @app.get("/kos/{ko_id:path}/service")
 async def download_file(ko_id: str):
     try:
-        file = Knowledge_Objects[ko_id].metadata.get("hasServiceSpecification" ,"service.yaml") #default to service.yaml
-        #if version 2 (or after) use service file defined in python service
-        if Knowledge_Objects[ko_id].metadata.get("kgrid","")!="" and Knowledge_Objects[ko_id].metadata["kgrid"]=="2": 
-            services=Knowledge_Objects[ko_id].metadata["hasService"]
-            for service in services:                
-                if service["@type"] == "API" and  service.get("implementedBy","")!="" and service.get("implementedBy","").get("@type","") == "org.kgrid.python-activator":
-                    file = service.get("hasServiceSpecification",Path(service["implementedBy"]["@id"]).joinpath( "service.yaml"))
-                    break                  
+        file = Knowledge_Objects[ko_id].metadata.get(
+            "hasServiceSpecification", "service.yaml"
+        )  # default to service.yaml
+        # if version 2 (or after) use service file defined in python service
+        if (
+            Knowledge_Objects[ko_id].metadata.get("kgrid", "") != ""
+            and Knowledge_Objects[ko_id].metadata["kgrid"] == "2"
+        ):
+            services = Knowledge_Objects[ko_id].metadata["hasService"]
+            for service in services:
+                if (
+                    service["@type"] == "API"
+                    and service.get("implementedBy", "") != ""
+                    and service.get("implementedBy", "").get("@type", "")
+                    == "org.kgrid.python-activator"
+                ):
+                    file = Path(service["implementedBy"]["@id"]).joinpath(
+                        service.get("hasServiceSpecification", "service.yaml")
+                    )
+                    break
 
     except Exception as e:
         raise KONotFoundError(e)
-    
+
     full_path = str(
         Path(object_directory)
         .joinpath(Knowledge_Objects[ko_id].metadata["local_url"])
@@ -142,9 +156,9 @@ async def download_file(ko_id: str):
     }
     if not os.path.isfile(full_path):
         raise HTTPException(status_code=404, detail="File not found")
-    return FileResponse(full_path,headers=headers)
-    
-        
+    return FileResponse(full_path, headers=headers)
+
+
 @app.get("/kos")
 def endpoints(request: Request):
     for obj_key in Knowledge_Objects:
@@ -158,7 +172,10 @@ def endpoints(request: Request):
     return [obj.metadata for obj in Knowledge_Objects.values()]
 
 
-@app.get("/kos/{ko_id:path}/doc", description="You should try out this route in your browser. It performs a redirection to the swagger editor for the ko which its id is provided.")
+@app.get(
+    "/kos/{ko_id:path}/doc",
+    description="You should try out this route in your browser. It performs a redirection to the swagger editor for the ko which its id is provided.",
+)
 async def endpoint_detail(ko_id: str, request: Request):
     try:
         response = RedirectResponse(
@@ -194,6 +211,3 @@ async def startup_event():
 
     global object_directory
     object_directory = set_object_directory()
-
-
-

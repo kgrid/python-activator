@@ -28,5 +28,9 @@
   { 
       "@id": "BMICalculator",
       "url": "bmi-calc-ko.zip"
+  },
+  { 
+      "@id": "js/simple/v1.0",
+      "url": "js-simple-v1-0.zip"
   }
 ]
