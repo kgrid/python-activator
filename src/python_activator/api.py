@@ -26,12 +26,14 @@ app = FastAPI(
     },
 )
 
-app.mount("/demo", StaticFiles(directory=Path("demo")), name="demo")  # demo static file
+# Demo app using static file
+app.mount("/demo", StaticFiles(directory=Path("demo")), name="demo")
 
 Knowledge_Objects = {}
 Routing_Dictionary = {}
 object_directory = ""
 
+# Add middleware to control access to APIs
 origins = [
     "http://editor.swagger.io",  # Add the domain of the external systems using apis. for all origins use ["*"]
     "https://editor.swagger.io",
@@ -45,6 +47,7 @@ app.add_middleware(
 )
 
 
+# Prepare custom exceptions and their response
 @app.exception_handler(EndpointNotFoundError)
 @app.exception_handler(KONotFoundError)
 @app.exception_handler(InvalidInputParameterError)
@@ -58,6 +61,7 @@ async def custom_exception_handler(request, exc):
     )
 
 
+# Add logging for main api calls
 async def custom_middleware(request: Request, call_next):
     path = request.url.path
     if path.startswith("/endpoints/") and request.method == "POST":
@@ -73,6 +77,7 @@ async def custom_middleware(request: Request, call_next):
     return response
 
 
+# Add middleware for logging api calls
 app.middleware("http")(custom_middleware)
 
 
@@ -85,12 +90,20 @@ async def root(request: Request):
     return response
 
 
-@app.get("/endpoints")
+@app.get(
+    "/endpoints",
+    summary="",
+    description="Gives the list of activated endpoints and their detail.",
+)
 def endpoints(request: Request):
     return [{"@id": key, **obj} for key, obj in Routing_Dictionary.items()]
 
 
-@app.get("/endpoints/{endpoint_path:path}")
+@app.get(
+    "/endpoints/{endpoint_path:path}",
+    summary="Endpoint Detail",
+    description="Gives detail for a specific endpoint.",
+)
 async def endpoint_detail(endpoint_path: str, request: Request):
     try:
         return Routing_Dictionary[endpoint_path]
@@ -98,7 +111,11 @@ async def endpoint_detail(endpoint_path: str, request: Request):
         raise EndpointNotFoundError(e)  # repr(e)
 
 
-@app.post("/endpoints/{endpoint_path:path}")
+@app.post(
+    "/endpoints/{endpoint_path:path}",
+    summary="Execute Endpoint",
+    description="Execute the KO function behind a specific endpoint.",
+)
 async def execute_endpoint(
     endpoint_path: str,
     body: Any = Body(...),
@@ -118,7 +135,11 @@ async def execute_endpoint(
         raise InvalidInputParameterError(e)
 
 
-@app.get("/kos/{ko_id:path}/service")
+@app.get(
+    "/kos/{ko_id:path}/service",
+    summary="Download Service File",
+    description="Provide access to the service.yaml for each ko at /kos/{{ko_id}}/service.",
+)
 async def download_file(ko_id: str):
     try:
         file = Knowledge_Objects[ko_id].metadata.get(
@@ -159,7 +180,11 @@ async def download_file(ko_id: str):
     return FileResponse(full_path, headers=headers)
 
 
-@app.get("/kos")
+@app.get(
+    "/kos",
+    summary="KOs List and Detail",
+    description="Gives the list of KOs and their detail.",
+)
 def endpoints(request: Request):
     for obj_key in Knowledge_Objects:
         if Knowledge_Objects[obj_key].metadata["status"] == "activated":
@@ -174,7 +199,8 @@ def endpoints(request: Request):
 
 @app.get(
     "/kos/{ko_id:path}/doc",
-    description="You should try out this route in your browser. It performs a redirection to the swagger editor for the ko which its id is provided.",
+    summary="KO Documentation",
+    description="This API redirects to the swagger editor for ko with id {ko_id}. This route should be used only in the browser.",
 )
 async def endpoint_detail(ko_id: str, request: Request):
     try:
@@ -188,7 +214,11 @@ async def endpoint_detail(ko_id: str, request: Request):
         raise KONotFoundError(e)
 
 
-@app.get("/kos/{ko_id:path}")
+@app.get(
+    "/kos/{ko_id:path}",
+    summary="KO Detail",
+    description="Gives a specific KO and its detail.",
+)
 async def endpoint_detail(ko_id: str, request: Request):
     try:
         Knowledge_Objects[ko_id].metadata["documentation"] = (
@@ -199,6 +229,7 @@ async def endpoint_detail(ko_id: str, request: Request):
         raise KONotFoundError(e)
 
 
+# Load and install KOs
 # startup runs if the app is starated using a web server like
 # "poetry run uvicorn python_activator.api:app --reload"
 @app.on_event("startup")
