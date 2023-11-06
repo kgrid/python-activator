@@ -167,21 +167,21 @@ class Knowledge_Object:
             for service in services:
                 if (
                     service["@type"] == "API"
-                    and service.get("implementedBy", "") != ""
-                    and service.get("implementedBy", "").get("@type", "")
-                    == "org.kgrid.python-activator"
-                ):
-                    deployment_file = Path(object_directory).joinpath(
-                        self.metadata["local_url"],
-                        Path(service["implementedBy"]["@id"]).joinpath(
-                            service.get("hasDeploymentSpecification", "deployment.yaml")
-                        ),
-                    )
-                    self.python_service = Path(object_directory).joinpath(
-                        self.metadata["local_url"], service["implementedBy"]["@id"]
-                    )
-                    engine = "org.kgrid.python-activator"
-                    break
+                    and service.get("implementedBy", "") != "") :
+                        implementations=service["implementedBy"] 
+                        for implementation in implementations:
+                            if(implementation.get("@type", "")== "org.kgrid.python-activator"):
+                                deployment_file = Path(object_directory).joinpath(
+                                    self.metadata["local_url"],
+                                    Path(service["@id"]).joinpath(implementation["@id"],
+                                        implementation.get("hasDeploymentSpecification", "deployment.yaml")
+                                    ),
+                                )
+                                self.python_service = Path(object_directory).joinpath(
+                                    self.metadata["local_url"], service["@id"]
+                                )
+                                engine = "org.kgrid.python-activator"
+                                break
 
         with open(deployment_file, "r") as file:
             self.endpoints = [

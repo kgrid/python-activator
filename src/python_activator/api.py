@@ -154,15 +154,14 @@ async def download_file(ko_id: str):
             for service in services:
                 if (
                     service["@type"] == "API"
-                    and service.get("implementedBy", "") != ""
-                    and service.get("implementedBy", "").get("@type", "")
-                    == "org.kgrid.python-activator"
-                ):
-                    file = Path(service["implementedBy"]["@id"]).joinpath(
-                        service.get("hasServiceSpecification", "service.yaml")
-                    )
-                    break
-
+                        and service.get("implementedBy", "") != "") :
+                    implementations=service["implementedBy"] 
+                    for implementation in implementations:
+                        if(implementation.get("@type", "")== "org.kgrid.python-activator"):
+                            file = Path(service["@id"]).joinpath(
+                                service.get("hasServiceSpecification", "service.yaml")
+                            )
+                            break
     except Exception as e:
         raise KONotFoundError(e)
 
