@@ -173,12 +173,12 @@ class Knowledge_Object:
                             if(implementation.get("@type", "")== "org.kgrid.python-activator"):
                                 deployment_file = Path(object_directory).joinpath(
                                     self.metadata["local_url"],
-                                    Path(service["@id"]).joinpath(implementation["@id"],
+                                    Path(implementation["@id"]).joinpath(
                                         implementation.get("hasDeploymentSpecification", "deployment.yaml")
                                     ),
                                 )
                                 self.python_service = Path(object_directory).joinpath(
-                                    self.metadata["local_url"], service["@id"]
+                                    self.metadata["local_url"], implementation["@id"]
                                 )
                                 engine = "org.kgrid.python-activator"
                                 break

@@ -158,9 +158,7 @@ async def download_file(ko_id: str):
                     implementations=service["implementedBy"] 
                     for implementation in implementations:
                         if(implementation.get("@type", "")== "org.kgrid.python-activator"):
-                            file = Path(service["@id"]).joinpath(
-                                service.get("hasServiceSpecification", "service.yaml")
-                            )
+                            file = service.get("hasServiceSpecification", "service.yaml")
                             break
     except Exception as e:
         raise KONotFoundError(e)
