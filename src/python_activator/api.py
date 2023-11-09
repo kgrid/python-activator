@@ -147,17 +147,17 @@ async def download_file(ko_id: str):
         )  # default to service.yaml
         # if version 2 (or after) use service file defined in python service
         if (
-            Knowledge_Objects[ko_id].metadata.get("kgrid", "") != ""
-            and Knowledge_Objects[ko_id].metadata["kgrid"] == "2"
+            Knowledge_Objects[ko_id].metadata.get("koio:kgrid", "") != ""
+            and Knowledge_Objects[ko_id].metadata["koio:kgrid"] == "2"
         ):
-            services = Knowledge_Objects[ko_id].metadata["hasService"]
+            services = Knowledge_Objects[ko_id].metadata["koio:hasService"]
             for service in services:
                 if (
                     service["@type"] == "API"
                         and service.get("implementedBy", "") != "") :
                     implementations=service["implementedBy"] 
                     for implementation in implementations:
-                        if(implementation.get("@type", "")== "org.kgrid.python-activator"):
+                        if(implementation.get("@type", "")== "koio:org.kgrid.python-activator"):
                             file = service.get("hasServiceSpecification", "service.yaml")
                             break
     except Exception as e:

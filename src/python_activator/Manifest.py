@@ -162,15 +162,15 @@ class Knowledge_Object:
         )
         engine = ""
         # code to support kgrid object model version 2
-        if self.metadata.get("kgrid", "") != "" and self.metadata["kgrid"] == "2":
-            services = self.metadata["hasService"]
+        if self.metadata.get("koio:kgrid", "") != "" and self.metadata["koio:kgrid"] == "2":
+            services = self.metadata["koio:hasService"]
             for service in services:
                 if (
                     service["@type"] == "API"
                     and service.get("implementedBy", "") != "") :
                         implementations=service["implementedBy"] 
                         for implementation in implementations:
-                            if(implementation.get("@type", "")== "org.kgrid.python-activator"):
+                            if(implementation.get("@type", "")== "koio:org.kgrid.python-activator"):
                                 deployment_file = Path(object_directory).joinpath(
                                     self.metadata["local_url"],
                                     Path(implementation["@id"]).joinpath(
@@ -180,21 +180,21 @@ class Knowledge_Object:
                                 self.python_service = Path(object_directory).joinpath(
                                     self.metadata["local_url"], implementation["@id"]
                                 )
-                                engine = "org.kgrid.python-activator"
+                                engine = "koio:org.kgrid.python-activator"
                                 break
 
-        with open(deployment_file, "r") as file:
-            self.endpoints = [
-                {"@id": self.metadata["@id"] + key, **obj}
-                for key, obj in yaml.safe_load(file).items()
-            ]
-
         try:
-            if self.metadata.get("kgrid", "") == "":
-                engine = self.endpoints[0]["post"]["engine"][
+            with open(deployment_file, "r") as file:
+                self.endpoints = [
+                    {"@id": self.metadata["@id"] + key, **obj}
+                    for key, obj in yaml.safe_load(file).items()
+                ]
+            
+            if self.metadata.get("koio:kgrid", "") == "":
+                engine = "koio:"+self.endpoints[0]["post"]["engine"][
                     "name"
                 ]  # in case of version 1 use first endpoint engine
-            if engine == "org.kgrid.python-activator":
+            if engine == "koio:org.kgrid.python-activator":
                 subprocess.run(
                     [
                         "pip",
@@ -209,28 +209,31 @@ class Knowledge_Object:
             self.metadata["error"] = "not installed " + repr(e)
 
         all_endpoints_activated = True
-        for endpoint in self.endpoints:
-            try:
-                if endpoint["post"]["engine"]["name"] != "org.kgrid.python-activator":
-                    return
-                package = endpoint["post"]["engine"]["package"]
-                module = endpoint["post"]["engine"]["module"]
-                function = endpoint["post"]["engine"]["function"]
+        try:
+            for endpoint in self.endpoints:
+                try:
+                    if endpoint["post"]["engine"]["name"] != "org.kgrid.python-activator":
+                        return
+                    package = endpoint["post"]["engine"]["package"]
+                    module = endpoint["post"]["engine"]["module"]
+                    function = endpoint["post"]["engine"]["function"]
 
-                # Dynamically import the package
-                package_module = importlib.import_module(package + "." + module)
+                    # Dynamically import the package
+                    package_module = importlib.import_module(package + "." + module)
 
-                # Get the specific function from the module
+                    # Get the specific function from the module
 
-                endpoint["function"] = getattr(package_module, function)
-                endpoint["function"].description = str(endpoint["function"])
-                Routing_Dictionary[endpoint["@id"]] = endpoint
-            except Exception as e:
-                self.metadata["error"] = "error activating endpoint: " + repr(e)
-                all_endpoints_activated = False
-        if all_endpoints_activated:
-            self.metadata["status"] = "activated"
-
+                    endpoint["function"] = getattr(package_module, function)
+                    endpoint["function"].description = str(endpoint["function"])
+                    Routing_Dictionary[endpoint["@id"]] = endpoint
+                except Exception as e:
+                    self.metadata["error"] = "error activating endpoint: " + repr(e)
+                    all_endpoints_activated = False
+            if all_endpoints_activated:
+                self.metadata["status"] = "activated"
+        except Exception as e:
+                self.metadata["error"] = "error activating endpoint1: " + repr(e)
+                
     def short_representation(self):
         representation = {
             "@id": self.metadata["@id"] if self.metadata else "",
