@@ -1,11 +1,13 @@
 import importlib
 import json
+from pyld import jsonld
 import logging
 import os
 import subprocess
 import sys
 from pathlib import Path
 from urllib.parse import urlparse
+import requests
 
 import yaml
 
@@ -162,26 +164,52 @@ class Knowledge_Object:
         )
         engine = ""
         # code to support kgrid object model version 2
-        if self.metadata.get("koio:kgrid", "") != "" and self.metadata["koio:kgrid"] == "2":
+        if (
+            self.metadata.get("koio:kgrid", "") != ""
+            and self.metadata["koio:kgrid"] == "2"
+        ):
             services = self.metadata["koio:hasService"]
             for service in services:
-                if (
-                    service["@type"] == "API"
-                    and service.get("implementedBy", "") != "") :
-                        implementations=service["implementedBy"] 
-                        for implementation in implementations:
-                            if(implementation.get("@type", "")== "koio:org.kgrid.python-activator"):
-                                deployment_file = Path(object_directory).joinpath(
-                                    self.metadata["local_url"],
-                                    Path(implementation["@id"]).joinpath(
-                                        implementation.get("hasDeploymentSpecification", "deployment.yaml")
+                if service["@type"] == "API" and service.get("implementedBy", "") != "":
+                    implementations = service["implementedBy"]
+                    for implementation in implementations:
+                        if (
+                            implementation.get("@type", "")
+                            == "koio:org.kgrid.python-activator"
+                        ):
+                            # load context
+                            context = None
+                            response = requests.get(self.metadata["@context"])
+                            if response.status_code == 200:
+                                context = response.json()
+
+                            # add @base to context
+                            context["@context"]["@base"] = str(
+                                Path(object_directory).joinpath(
+                                    self.metadata["local_url"], " "
+                                )
+                            )
+
+                            # expand implementation
+                            implementation = jsonld.expand(
+                                implementation,
+                                {
+                                    "expandContext": context,
+                                    "base": str(
+                                        Path(object_directory).joinpath(
+                                            self.metadata["local_url"], " "
+                                        )
                                     ),
-                                )
-                                self.python_service = Path(object_directory).joinpath(
-                                    self.metadata["local_url"], implementation["@id"]
-                                )
-                                engine = "koio:org.kgrid.python-activator"
-                                break
+                                },
+                            )
+
+                            # use resolved implementation id
+                            deployment_file = Path(implementation[0]["@id"]).joinpath(
+                                "deployment.yaml"
+                            )
+                            self.python_service = implementation[0]["@id"]
+                            engine = "koio:org.kgrid.python-activator"
+                            break
 
         try:
             with open(deployment_file, "r") as file:
@@ -189,11 +217,11 @@ class Knowledge_Object:
                     {"@id": self.metadata["@id"] + key, **obj}
                     for key, obj in yaml.safe_load(file).items()
                 ]
-            
+
             if self.metadata.get("koio:kgrid", "") == "":
-                engine = "koio:"+self.endpoints[0]["post"]["engine"][
-                    "name"
-                ]  # in case of version 1 use first endpoint engine
+                engine = (
+                    "koio:" + self.endpoints[0]["post"]["engine"]["name"]
+                )  # in case of version 1 use first endpoint engine
             if engine == "koio:org.kgrid.python-activator":
                 subprocess.run(
                     [
@@ -212,7 +240,10 @@ class Knowledge_Object:
         try:
             for endpoint in self.endpoints:
                 try:
-                    if endpoint["post"]["engine"]["name"] != "org.kgrid.python-activator":
+                    if (
+                        endpoint["post"]["engine"]["name"]
+                        != "org.kgrid.python-activator"
+                    ):
                         return
                     package = endpoint["post"]["engine"]["package"]
                     module = endpoint["post"]["engine"]["module"]
@@ -232,8 +263,8 @@ class Knowledge_Object:
             if all_endpoints_activated:
                 self.metadata["status"] = "activated"
         except Exception as e:
-                self.metadata["error"] = "error activating endpoint1: " + repr(e)
-                
+            self.metadata["error"] = "error activating endpoint: " + repr(e)
+
     def short_representation(self):
         representation = {
             "@id": self.metadata["@id"] if self.metadata else "",

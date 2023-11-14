@@ -14,6 +14,8 @@ from .exceptions import (
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 from fastapi.responses import FileResponse
+from pyld import jsonld
+import requests
 
 app = FastAPI(
     title="Python Activator",
@@ -145,6 +147,13 @@ async def download_file(ko_id: str):
         file = Knowledge_Objects[ko_id].metadata.get(
             "hasServiceSpecification", "service.yaml"
         )  # default to service.yaml
+
+        full_path = str(
+            Path(object_directory)
+            .joinpath(Knowledge_Objects[ko_id].metadata["local_url"])
+            .joinpath(file)
+        )
+
         # if version 2 (or after) use service file defined in python service
         if (
             Knowledge_Objects[ko_id].metadata.get("koio:kgrid", "") != ""
@@ -152,22 +161,47 @@ async def download_file(ko_id: str):
         ):
             services = Knowledge_Objects[ko_id].metadata["koio:hasService"]
             for service in services:
-                if (
-                    service["@type"] == "API"
-                        and service.get("implementedBy", "") != "") :
-                    implementations=service["implementedBy"] 
+                if service["@type"] == "API" and service.get("implementedBy", "") != "":
+                    if service.get("hasServiceSpecification", "") == "":
+                        service["hasServiceSpecification"] = "service.yaml"
+                    implementations = service["implementedBy"]
                     for implementation in implementations:
-                        if(implementation.get("@type", "")== "koio:org.kgrid.python-activator"):
-                            file = service.get("hasServiceSpecification", "service.yaml")
+                        if (
+                            implementation.get("@type", "")
+                            == "koio:org.kgrid.python-activator"
+                        ):
+                            # load context
+                            context = None
+                            response = requests.get(
+                                Knowledge_Objects[ko_id].metadata["@context"]
+                            )
+                            if response.status_code == 200:
+                                context = response.json()
+
+                            # add @base to context
+                            context["@context"]["@base"] = str(
+                                Path(object_directory).joinpath(
+                                    Knowledge_Objects[ko_id].metadata["local_url"], " "
+                                )
+                            )
+
+                            # exoand the service using the context
+                            service = jsonld.expand(
+                                service,
+                                {
+                                    "expandContext": context,
+                                    "base": context["@context"]["@base"],
+                                },
+                            )
+
+                            # use resolved hasServiceSpcification
+                            full_path = service[0].get(
+                                "http://kgrid.org/koio#hasServiceSpcification"
+                            )[0]["@id"]
                             break
     except Exception as e:
         raise KONotFoundError(e)
 
-    full_path = str(
-        Path(object_directory)
-        .joinpath(Knowledge_Objects[ko_id].metadata["local_url"])
-        .joinpath(file)
-    )
     headers = {
         "Content-Type": "application/x-yaml",  # or "text/yaml"
         "Content-Disposition": f"attachment; filename={file}",
