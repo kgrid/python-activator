@@ -37,7 +37,7 @@ logging.basicConfig(
     handlers=[stderr_handler],
 )
 
-#create package path in os temp folder to be used to install packages
+# create package path in os temp folder to be used to install packages
 temp_dir = tempfile.gettempdir()
 folder_name = "org-kgrid-python-activator"
 temp_package_path = os.path.join(temp_dir, folder_name)
@@ -177,7 +177,7 @@ class Knowledge_Object:
             self.metadata.get("koio:kgrid", "") != ""
             and self.metadata["koio:kgrid"] == "2"
         ):
-            deployment_file="" #reinitialize for kgrid 2 objects
+            deployment_file = ""  # reinitialize for kgrid 2 objects
             services = self.metadata["koio:hasService"]
             for service in services:
                 if service["@type"] == "API" and service.get("implementedBy", "") != "":
@@ -222,7 +222,9 @@ class Knowledge_Object:
                             break
 
         try:
-            if deployment_file=="": #if has no value means it is a kgrid 2 object with no python service 
+            if (
+                deployment_file == ""
+            ):  # if has no value means it is a kgrid 2 object with no python service
                 return
             with open(deployment_file, "r") as file:
                 self.endpoints = [
@@ -234,11 +236,12 @@ class Knowledge_Object:
                 engine = (
                     "koio:" + self.endpoints[0]["post"]["engine"]["name"]
                 )  # in case of version 1 use first endpoint engine
-            
-            #path to a folder in temp directory to install the new package 
-            module_path = os.path.join(temp_package_path,secrets.token_hex(8), self.metadata["@id"])
 
-            
+            # path to a folder in temp directory to install the new package
+            module_path = os.path.join(
+                temp_package_path, secrets.token_hex(8), self.metadata["@id"]
+            )
+
             if engine == "koio:org.kgrid.python-activator":
                 subprocess.run(
                     [
@@ -270,15 +273,19 @@ class Knowledge_Object:
                     package = endpoint["post"]["engine"]["package"]
                     module = endpoint["post"]["engine"]["module"]
                     function = endpoint["post"]["engine"]["function"]
-                    
+
                     # add module_path to sys.path temporarily
                     sys.path.insert(0, module_path)
-                    
-                    #remove packages with the same name and their submodules from sys.modules before installing the new one
-                    submodule_names = [submodule_name for submodule_name in sys.modules if submodule_name.startswith(package )]
+
+                    # remove packages with the same name and their submodules from sys.modules before installing the new one
+                    submodule_names = [
+                        submodule_name
+                        for submodule_name in sys.modules
+                        if submodule_name.startswith(package)
+                    ]
                     for submodule_name in submodule_names:
                         sys.modules.pop(submodule_name, None)
-                  
+
                     # Dynamically import the package
                     package_module = importlib.import_module(package + "." + module)
 
@@ -286,7 +293,7 @@ class Knowledge_Object:
                     endpoint["function"] = getattr(package_module, function)
                     endpoint["function"].description = str(endpoint["function"])
                     Routing_Dictionary[endpoint["@id"]] = endpoint
-                    
+
                     # remove module_path from sys.path
                     sys.path.remove(module_path)
                 except Exception as e:
