@@ -1,5 +1,6 @@
 import importlib
 import json
+import secrets
 from pyld import jsonld
 import logging
 import os
@@ -19,6 +20,8 @@ from .loader import (
     set_object_directory,
 )
 
+import tempfile
+
 object_directory = ""
 Routing_Dictionary = {}
 has_input_manifest = True
@@ -33,6 +36,12 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(name)s - %(funcName)s - %(message)s",
     handlers=[stderr_handler],
 )
+
+# create package path in os temp folder to be used to install packages
+temp_dir = tempfile.gettempdir()
+folder_name = "org-kgrid-python-activator"
+temp_package_path = os.path.join(temp_dir, folder_name)
+os.makedirs(temp_package_path, exist_ok=True)
 
 
 class Manifest:
@@ -168,6 +177,7 @@ class Knowledge_Object:
             self.metadata.get("koio:kgrid", "") != ""
             and self.metadata["koio:kgrid"] == "2"
         ):
+            deployment_file = ""  # reinitialize for kgrid 2 objects
             services = self.metadata["koio:hasService"]
             for service in services:
                 if service["@type"] == "API" and service.get("implementedBy", "") != "":
@@ -212,6 +222,10 @@ class Knowledge_Object:
                             break
 
         try:
+            if (
+                deployment_file == ""
+            ):  # if has no value means it is a kgrid 2 object with no python service
+                return
             with open(deployment_file, "r") as file:
                 self.endpoints = [
                     {"@id": self.metadata["@id"] + key, **obj}
@@ -222,11 +236,21 @@ class Knowledge_Object:
                 engine = (
                     "koio:" + self.endpoints[0]["post"]["engine"]["name"]
                 )  # in case of version 1 use first endpoint engine
+
+            # path to a folder in temp directory to install the new package
+            module_path = os.path.join(
+                temp_package_path, secrets.token_hex(8), self.metadata["@id"]
+            )
+
             if engine == "koio:org.kgrid.python-activator":
                 subprocess.run(
                     [
                         "pip",
                         "install",
+                        "--force-reinstall",
+                        "--upgrade",
+                        "--target",
+                        module_path,
                         self.python_service,
                     ],
                     check=True,
@@ -235,6 +259,7 @@ class Knowledge_Object:
 
         except Exception as e:
             self.metadata["error"] = "not installed " + repr(e)
+            return
 
         all_endpoints_activated = True
         try:
@@ -249,14 +274,28 @@ class Knowledge_Object:
                     module = endpoint["post"]["engine"]["module"]
                     function = endpoint["post"]["engine"]["function"]
 
+                    # add module_path to sys.path temporarily
+                    sys.path.insert(0, module_path)
+
+                    # remove packages with the same name and their submodules from sys.modules before installing the new one
+                    submodule_names = [
+                        submodule_name
+                        for submodule_name in sys.modules
+                        if submodule_name.startswith(package)
+                    ]
+                    for submodule_name in submodule_names:
+                        sys.modules.pop(submodule_name, None)
+
                     # Dynamically import the package
                     package_module = importlib.import_module(package + "." + module)
 
                     # Get the specific function from the module
-
                     endpoint["function"] = getattr(package_module, function)
                     endpoint["function"].description = str(endpoint["function"])
                     Routing_Dictionary[endpoint["@id"]] = endpoint
+
+                    # remove module_path from sys.path
+                    sys.path.remove(module_path)
                 except Exception as e:
                     self.metadata["error"] = "error activating endpoint: " + repr(e)
                     all_endpoints_activated = False
