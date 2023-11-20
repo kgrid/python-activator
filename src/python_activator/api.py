@@ -166,10 +166,9 @@ async def download_file(ko_id: str):
                         service["hasServiceSpecification"] = "service.yaml"
                     implementations = service["implementedBy"]
                     for implementation in implementations:
-                        if (
-                            implementation.get("@type", "")
-                            == "koio:org.kgrid.python-activator"
-                        ):
+                        service_type=implementation.get("@type", [])
+                        if ("https://kgrid.org/specs/activationSpec.html#object" in service_type and "python" in service_type
+                        ):                        
                             # load context
                             context = None
                             response = requests.get(

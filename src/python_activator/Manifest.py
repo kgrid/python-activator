@@ -183,9 +183,8 @@ class Knowledge_Object:
                 if service["@type"] == "API" and service.get("implementedBy", "") != "":
                     implementations = service["implementedBy"]
                     for implementation in implementations:
-                        if (
-                            implementation.get("@type", "")
-                            == "koio:org.kgrid.python-activator"
+                        service_type=implementation.get("@type", [])
+                        if ("https://kgrid.org/specs/activationSpec.html#object" in service_type and "python" in service_type
                         ):
                             # load context
                             context = None

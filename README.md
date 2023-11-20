@@ -4,7 +4,7 @@ The `python-activator` can be installed from a binary wheel (.whl)  or a source 
 
 ```bash
 # install from a release
-pip install https://github.com/kgrid/python-activator/releases/download/0.5/python_activator-0.5-py3-none-any.whl  
+pip install https://github.com/kgrid/python-activator/releases/download/0.7/python_activator-0.7-py3-none-any.whl  
 ```
 
 See the [development notes](#development) for [other ways to install the app](#other-ways-to-install-the-app).
@@ -16,7 +16,7 @@ See the [development notes](#development) for [other ways to install the app](#o
 > To use the command line interface (CLI) you must install the CLI as an _extra_. Add `[cli]` to the end of the `.whl` package name and quote the entire package path.
 
 ```bash 
-pip install "python-activator[cli]@https://github.com/kgrid/python-activator/releases/download/0.6/python_activator-0.6-py3-none-any.whl"
+pip install "python-activator[cli]@https://github.com/kgrid/python-activator/releases/download/0.7/python_activator-0.7-py3-none-any.whl"
 ```
 
 ### Use CLI to run 
@@ -140,7 +140,7 @@ pip install https://github.com/kgrid/python-activator.git  # from source --force
 #### from local builds (from `dist/`) during development
 
 ```bash
-pip install path/to/src/python-activator/dist/python_activator-0.5-py3-none-any.whl
+pip install path/to/src/python-activator/dist/python_activator-0.7-py3-none-any.whl
 ```
   
 ## Deployment
