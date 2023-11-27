@@ -187,10 +187,11 @@ class Knowledge_Object:
                         if ("https://kgrid.org/specs/activationSpec.html#object" in service_type and "python" in service_type
                         ):
                             # load context
-                            context = None
-                            response = requests.get(self.metadata["@context"])
-                            if response.status_code == 200:
-                                context = response.json()
+                            context = {"@context":self.metadata["@context"]}
+                            if ".jsonld" in self.metadata["@context"]:
+                                response = requests.get(self.metadata["@context"])
+                                if response.status_code == 200:
+                                    context = response.json()
 
                             # add @base to context
                             context["@context"]["@base"] = str(

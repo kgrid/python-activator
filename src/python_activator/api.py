@@ -170,12 +170,13 @@ async def download_file(ko_id: str):
                         if ("https://kgrid.org/specs/activationSpec.html#object" in service_type and "python" in service_type
                         ):                        
                             # load context
-                            context = None
-                            response = requests.get(
-                                Knowledge_Objects[ko_id].metadata["@context"]
-                            )
-                            if response.status_code == 200:
-                                context = response.json()
+                            context = {"@context":Knowledge_Objects[ko_id].metadata["@context"]}
+                            if ".jsonld" in Knowledge_Objects[ko_id].metadata["@context"]:
+                                response = requests.get(
+                                    Knowledge_Objects[ko_id].metadata["@context"]
+                                )
+                                if response.status_code == 200:
+                                    context = response.json()
 
                             # add @base to context
                             context["@context"]["@base"] = str(
