@@ -215,8 +215,8 @@ If a service has more than one endpoint with the same name, the Python activator
 Note: Multiartifact packages should not have a dot in their name as it causes issues for python domain names. Packages can have any name on their folder. If you are providing unzipped packages please rename your packages like the following example: from  python-multiartifact-v1.0 to python-multiartifact-v1-0.
 
 ## Related links
-- Ontology [validation service](http://iot.ee.surrey.ac.uk/SSNValidation/)
 - [Kgrid Website](https://kgrid.org/)
+- [Knowledge Grid Activator Specifications](https://kgrid.org/specs/activationSpec.html) 
 - [JavaScrirpt Activator](https://github.com/kgrid/javascript-activator)
 - [kgrid Reference Objects](https://github.com/kgrid/reference-objects)
 - [Kgrid Knowledge Objects](https://github.com/kgrid/koio/blob/master/kgrid_knowledge_objects.md) 
