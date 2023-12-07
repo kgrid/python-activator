@@ -28,8 +28,11 @@ app = FastAPI(
     },
 )
 
-# Demo app using static file
-app.mount("/demo", StaticFiles(directory=Path("demo")), name="demo")
+try:
+    # Demo app using static file
+    app.mount("/demo", StaticFiles(directory=Path("demo")), name="demo")
+except:
+    pass
 
 Knowledge_Objects = {}
 Routing_Dictionary = {}
