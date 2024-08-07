@@ -174,12 +174,15 @@ async def download_file(ko_id: str):
                         ):                        
                             # load context
                             context = {"@context":Knowledge_Objects[ko_id].metadata["@context"]}
-                            if ".jsonld" in Knowledge_Objects[ko_id].metadata["@context"]:
-                                response = requests.get(
-                                    Knowledge_Objects[ko_id].metadata["@context"]
-                                )
-                                if response.status_code == 200:
-                                    context = response.json()
+                            # Check if context["@context"] is a URL
+                            if isinstance(context["@context"], str):
+                                # Fetch the external context
+                                external_context_url = context["@context"]
+                                response = requests.get(external_context_url)
+                                external_context = response.json()
+
+                                # Replace the external URL in your original context with the expanded one
+                                context["@context"] = external_context
 
                             # add @base to context
                             context["@context"]["@base"] = str(
@@ -199,7 +202,7 @@ async def download_file(ko_id: str):
 
                             # use resolved hasServiceSpcification
                             full_path = service[0].get(
-                                "http://kgrid.org/koio#hasServiceSpcification"
+                                "https://kgrid.org/koio#hasServiceSpecification"
                             )[0]["@id"]
                             break
     except Exception as e:

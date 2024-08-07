@@ -188,10 +188,17 @@ class Knowledge_Object:
                         ):
                             # load context
                             context = {"@context":self.metadata["@context"]}
-                            if ".jsonld" in self.metadata["@context"]:
-                                response = requests.get(self.metadata["@context"])
-                                if response.status_code == 200:
-                                    context = response.json()
+
+                            # Check if context["@context"] is a URL
+                            if isinstance(context["@context"], str):
+                                # Fetch the external context
+                                external_context_url = context["@context"]
+                                response = requests.get(external_context_url)
+                                external_context = response.json()
+
+                                # Replace the external URL in your original context with the expanded one
+                                context["@context"] = external_context
+
 
                             # add @base to context
                             context["@context"]["@base"] = str(
