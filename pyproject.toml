@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "python-activator"
-version = "0.7"
+version = "0.8"
 description = ""
 authors = ["kgrid developers <kgrid-developers@umich.edu>", "Farid Seifi <faridsei@med.umich.edu>"]
 readme = "README.md"

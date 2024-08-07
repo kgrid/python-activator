@@ -20,7 +20,7 @@ import requests
 app = FastAPI(
     title="Python Activator",
     description="This activator is a reference implementation of kgrid activator specs. It activates knowledge objects that are implemented using Python and comply to kgrid specs.",
-    version="0.7.0",
+    version="0.8.0",
     contact={
         "name": "kgrid developers",
         "url": "https://kgrid.org/",
