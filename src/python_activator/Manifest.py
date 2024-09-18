@@ -180,11 +180,12 @@ class Knowledge_Object:
             deployment_file = ""  # reinitialize for kgrid 2 objects
             services = self.metadata["koio:hasService"]
             for service in services:
-                if service["@type"] == "API" and service.get("implementedBy", "") != "":
+                print(service["@type"])
+                if "API" in service["@type"]  and service.get("implementedBy", "") != "":
                     implementations = service["implementedBy"]
                     for implementation in implementations:
                         service_type=implementation.get("@type", [])
-                        if ("https://kgrid.org/specs/activationSpec.html#object" in service_type and "python" in service_type
+                        if ("https://kgrid.org/specs/activationSpec.html#object" in service_type and any("python" in s.lower() for s in service_type)
                         ):
                             # load context
                             context = {"@context":self.metadata["@context"]}

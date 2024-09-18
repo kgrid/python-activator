@@ -170,7 +170,7 @@ async def download_file(ko_id: str):
                     implementations = service["implementedBy"]
                     for implementation in implementations:
                         service_type=implementation.get("@type", [])
-                        if ("https://kgrid.org/specs/activationSpec.html#object" in service_type and "python" in service_type
+                        if ("https://kgrid.org/specs/activationSpec.html#object" in service_type and any("python" in s.lower() for s in service_type)
                         ):                        
                             # load context
                             context = {"@context":Knowledge_Objects[ko_id].metadata["@context"]}
