@@ -112,7 +112,7 @@ poetry env info
 Your IDE's Python tooling and testing should work as for any Python project. Find out more about using `poetry` to manage dependencies, and build, maintain, and publish projects here at [python-poetry.org](https://python-poetry.org/).
 
 ### Using reference objects
-This activator supports [kgrid 2.0 Knowledge objects](https://github.com/kgrid/koio/blob/master/kgrid_knowledge_objects.md). [Reference Knowledge Objects Collection](https://github.com/kgrid/reference-objects) has knowledge objects that have API services implemented for Python activator. A [Local Manifest file](https://github.com/kgrid/reference-objects/blob/main/local_manifest.json) is provided in this repository to help loading these KOs from a cloned location. Clone this repository using
+This activator supports [kgrid 2.0 Knowledge objects](https://github.com/kgrid/specs/blob/master/docs/kgrid-knowledge-objects.md). [Reference Knowledge Objects Collection](https://github.com/kgrid/reference-objects) has knowledge objects that have API services implemented for Python activator. A [Local Manifest file](https://github.com/kgrid/reference-objects/blob/main/local_manifest.json) is provided in this repository to help loading these KOs from a cloned location. Clone this repository using
 
     ```
     git clone https://github.com/kgrid/reference-objects.git
@@ -147,7 +147,7 @@ pip install https://github.com/kgrid/python-activator.git  # from source --force
 pip install path/to/src/python-activator/dist/python_activator-0.8-py3-none-any.whl
 ```
 ## Knowledge Object Development
-The Python activator supports [kgrdi 2.0 knowledge objects](https://github.com/kgrid/koio/blob/master/kgrid_knowledge_objects.md). kgrid 1.0 knowledge objects, however require some minor updates to work with Python activator:
+The Python activator supports [kgrdi 2.0 knowledge objects](https://github.com/kgrid/specs/blob/master/docs/kgrid-knowledge-objects.md). kgrid 1.0 knowledge objects, however require some minor updates to work with Python activator:
 1. The folder name containing those KOs should not contain any ".". So existing KO folders need to be renamed. 
 2. The python code artifacts should to be restructured as an installable python package.
 3. The deployment files need to be restructured using the following example:
@@ -219,5 +219,5 @@ Note: Multiartifact packages should not have a dot in their name as it causes is
 - [Knowledge Grid Activator Specifications](https://kgrid.org/specs/activationSpec.html) 
 - [JavaScrirpt Activator](https://github.com/kgrid/javascript-activator)
 - [kgrid Reference Objects](https://github.com/kgrid/reference-objects)
-- [Kgrid Knowledge Objects](https://github.com/kgrid/koio/blob/master/kgrid_knowledge_objects.md) 
+- [Kgrid Knowledge Objects](https://github.com/kgrid/specs/blob/master/docs/kgrid-knowledge-objects.md) 
 - [Knowledge Object Implementation Ontology (KOIO)](https://github.com/kgrid/koio)
