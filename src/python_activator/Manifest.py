@@ -179,8 +179,7 @@ class Knowledge_Object:
         ):
             deployment_file = ""  # reinitialize for kgrid 2 objects
             services = self.metadata["koio:hasService"]
-            for service in services:
-                print(service["@type"])
+            for service in services:                
                 if "API" in service["@type"]  and service.get("implementedBy", "") != "":
                     implementations = service["implementedBy"]
                     for implementation in implementations:

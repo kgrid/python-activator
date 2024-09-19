@@ -19,17 +19,27 @@ See the [development notes](#development) for [other ways to install the app](#o
 
 ## Run the app
 ### Environment variables
-When running the Python activator, a path to a manifest file could be provided as a list of knowledge objects to be activated and their locations. This path could be provided using ORG_KGRID_PYTHON_ACTIVATOR_MANIFEST_PATH as an environment variable or --manifest-path as an input parameter to the cli command. The knowledge objects that are listed on the manifest will be loaded to a cache location that would be used for activation. The location of this cache folder could be provided using ORG_KGRID_PYTHON_ACTIVATOR_COLLECTION_PATH as an environment variable or --collection-path as an unput parameter to the cli command. If no cache folder is provided the activator will use ./pyshelf by default. The activator creates a local manifest file in the cache when it loads knowledge objects before activating them. If you have a cache that already have loaded knowledge objects with a local manifest, you can run an activator and just provide the cache location as the collection path without an input manifest path to load the same knowledge objects from the cache.
+When running the Python activator, a path to a manifest file could be provided as a list of knowledge objects to be activated and their locations. This path could be provided using ORG_KGRID_PYTHON_ACTIVATOR_MANIFEST_PATH as an environment variable or --manifest-path as an input parameter to the cli command. The manifest file should be formatted as a jason array of objects which each one should include "@id" and "url" keys. The "@id" value should be the unique id of the object and the "url" should point to a local or remote zip file. See tests fixtures for [examples of manifest file](https://github.com/kgrid/python-activator/tree/main/tests/fixtures/installfiles). The knowledge objects that are listed on the manifest will be loaded to a cache location that would be used for activation. The location of this cache folder could be provided using ORG_KGRID_PYTHON_ACTIVATOR_COLLECTION_PATH as an environment variable or --collection-path as an input parameter to the cli command. If no cache folder is provided the activator will use ./pyshelf by default. The activator creates a local manifest file in the cache when it loads knowledge objects before activating them. If you have a cache that already have loaded knowledge objects with a local manifest, you can run an activator and just provide the cache location as the collection path without an input manifest path to load the same knowledge objects from the cache. If you have a collection of knowledge objects that are already loaded (are not zipped), but you do not have a local manifest file and you need to create one, you can use the CLI to create-manifest command. 
+### Install CLI
+The CLI has different commands including:
+- create-manifest     Creates local manifest for an existing collection.
+-  install-loaded-kos  Installs KOs from a local manifest in a collection.
+-  load-from-manifest  Loads KOs from a manifest and creates a local one.
+-  run                 Loads and installs knowledge objects and runs APIs.
+-  uninstall-kos       Uninstalls KOs from a local manifest in a coolection.
 
-### Use CLI to run 
-
-> **Note**
-> To use the command line interface (CLI) you must install the CLI as an _extra_. Add `[cli]` to the end of the `.whl` package name and quote the entire package path.
+To use the command line interface (CLI) you must install the CLI as an _extra_. Add `[cli]` to the end of the `.whl` package name and quote the entire package path.
 
 ```bash 
 pip install "python-activator[cli]@https://github.com/kgrid/python-activator/releases/download/0.8/python_activator-0.8-py3-none-any.whl"
 ```
 
+Once installed use the following to get the list of available commands:
+```bash
+python-activator --help    
+```
+
+### Use CLI to run
 Pass --collection-path and --manifest-path as input parameters:   
 
 ```bash
@@ -39,6 +49,12 @@ python-activator run --collection-path=<path> --manifest-path=<path>`
 
  For examples of this command see [Using reference objects](#using-reference-objects) or [Using other legacy examples](#using-other-legacy-examples)
 
+### Use CLI to create a local manifest
+Once the CLI is installed you can run the following command to create a local manifest file for a collection folder that contains unzipped knowledge objects:
+```bash
+python-activator create-manifest --collection-path <path>
+``` 
+Review the local manifest file after it is created to clean up extra sections created for files or folders in the collection folder that do not represent a knowledge object.
 ### Run the application module directly 
 
 The `python-activator` uses [FastAPI] which needs a WSGI/ASGI server like `uvicorn` to serve it's API. If you've installed the `[cli]` extras, `uvicorn` should be available. Otherwise you can `pip install uvicorn`. See 
@@ -188,7 +204,7 @@ Python activator uses ORG_KGRID_PYTHON_ACTIVATOR_MANIFEST_PATH as the environmen
 
 When using manifest file, this activator only accepts zipped knowledge objects. The local or remote (URL) paths to zip files should be listed on the input manifest. Relative local paths of zip files on the manifest file will be resolved towards the location of the manifest file. 
 
-The activator creates an unzipped local copy of KOs and a local manifest file in the cache folder when it activates knowledge objects from a manifest. (See [local manifest file created for reference objects](https://github.com/kgrid/reference-objects/blob/main/local_manifest.json) as an example of local manifest). This activator us able to unzip remote zip files.
+The activator creates an unzipped local copy of KOs and a local manifest file in the cache folder when it activates knowledge objects from a manifest. (See [local manifest file created for reference objects](https://github.com/kgrid/reference-objects/blob/main/local_manifest.json) as an example of local manifest). This activator is able to unzip remote zip files.
 
 If no manifest path is provided, Python activator can activate knowledge objects from a local cache that contains unzipped knowledge objects and the local manifest. 
 
