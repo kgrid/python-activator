@@ -42,6 +42,7 @@ object_directory = ""
 origins = [
     "http://editor.swagger.io",  # Add the domain of the external systems using apis. for all origins use ["*"]
     "https://editor.swagger.io",
+    "https://kgrid-objects.github.io",
     "http://localhost:8001"
 ]
 app.add_middleware(
