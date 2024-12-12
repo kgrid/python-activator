@@ -182,6 +182,8 @@ class Knowledge_Object:
             for service in services:                
                 if "API" in service["@type"]  and service.get("implementedBy", "") != "":
                     implementations = service["implementedBy"]
+                    if not isinstance(implementations, list):
+                        implementations = [implementations]
                     for implementation in implementations:
                         service_type=implementation.get("@type", [])
                         if ("https://kgrid.org/specs/activationSpec.html#object" in service_type and any("python" in s.lower() for s in service_type)
