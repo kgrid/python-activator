@@ -193,7 +193,7 @@ async def download_file(ko_id: str):
                                 )
                             )
 
-                            # exoand the service using the context
+                            # expand the service using the context
                             service = jsonld.expand(
                                 service,
                                 {
@@ -230,7 +230,7 @@ def endpoints(request: Request):
             Knowledge_Objects[obj_key].metadata["documentation"] = (
                 request.url.__str__()
                 + "/"
-                + Knowledge_Objects[obj_key].metadata["@id"]
+                + Knowledge_Objects[obj_key].metadata["@id"].replace("_:","")
                 + "/doc"
             )
     return [obj.metadata for obj in Knowledge_Objects.values()]

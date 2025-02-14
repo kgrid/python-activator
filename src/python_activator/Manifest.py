@@ -157,7 +157,7 @@ class Knowledge_Object:
         except:
             self.metadata = {}
             pass
-        self.metadata["@id"] = id
+        self.metadata["@id"] = id.replace("_:","")
         self.metadata["status"] = status
         if error:
             self.metadata["error"] = error
@@ -223,10 +223,10 @@ class Knowledge_Object:
                             )
 
                             # use resolved implementation id
-                            deployment_file = Path(implementation[0]["@id"]).joinpath(
+                            deployment_file = Path(implementation[0]["@id"]).parent.joinpath(
                                 "deployment.yaml"
                             )
-                            self.python_service = implementation[0]["@id"]
+                            self.python_service = Path(implementation[0]["@id"]).parent
                             engine = "koio:org.kgrid.python-activator"
                             break
 
